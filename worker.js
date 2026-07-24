@@ -1434,21 +1434,11 @@ const htmlContent = `<!DOCTYPE html>
                     return;
                 }
 
-                let finalMac = formattedMac;
-                let finalDdns = ddns;
-                let finalPort = port;
-
-                if (encryptDevice) {
-                    finalMac = CryptoJS.AES.encrypt(formattedMac, LOCAL_PRIVATE_KEY).toString();
-                    finalDdns = CryptoJS.AES.encrypt(ddns, LOCAL_PRIVATE_KEY).toString();
-                    finalPort = CryptoJS.AES.encrypt(port.toString(), LOCAL_PRIVATE_KEY).toString();
-                }
-
                 const deviceData = { 
                     name, 
-                    mac: finalMac, 
-                    ddns: finalDdns, 
-                    port: finalPort, 
+                    mac: formattedMac, 
+                    ddns, 
+                    port, 
                     autoWake,
                     isEncrypted: encryptDevice 
                 };
@@ -1494,6 +1484,33 @@ const htmlContent = `<!DOCTYPE html>
                 if (stored) {
                     try {
                         devices = JSON.parse(stored);
+                        // 旧バージョンの暗号化データ（isEncrypted: true で mac が暗号化文字列）を自動マイグレーション
+                        const LEGACY_KEY = 'EtherWake_Local_Storage_Key_2026';
+                        let migrated = false;
+                        devices.forEach(d => {
+                            if (d.isEncrypted && d.mac && !d.mac.includes(':')) {
+                                try {
+                                    const macBytes = CryptoJS.AES.decrypt(d.mac, LEGACY_KEY);
+                                    const decMac = macBytes.toString(CryptoJS.enc.Utf8);
+                                    const ddnsBytes = CryptoJS.AES.decrypt(d.ddns, LEGACY_KEY);
+                                    const decDdns = ddnsBytes.toString(CryptoJS.enc.Utf8);
+                                    const portBytes = CryptoJS.AES.decrypt(d.port.toString(), LEGACY_KEY);
+                                    const decPort = portBytes.toString(CryptoJS.enc.Utf8);
+
+                                    if (decMac && decDdns && decPort) {
+                                        d.mac = decMac;
+                                        d.ddns = decDdns;
+                                        d.port = parseInt(decPort, 10);
+                                        migrated = true;
+                                    }
+                                } catch (err) {
+                                    console.log('Legacy decryption skipped', err);
+                                }
+                            }
+                        });
+                        if (migrated) {
+                            saveDevices();
+                        }
                     } catch (e) {
                         console.error('Failed to parse stored devices', e);
                         devices = [];
@@ -1595,33 +1612,20 @@ const htmlContent = `<!DOCTYPE html>
                     devices.forEach(d => d.autoWake = false);
                 }
 
-                let finalDevice = { ...deviceData };
-
-                if (finalDevice.isEncrypted) {
-                    try {
-                        finalDevice.mac = CryptoJS.AES.encrypt(finalDevice.mac, LOCAL_PRIVATE_KEY).toString();
-                        finalDevice.ddns = CryptoJS.AES.encrypt(finalDevice.ddns, LOCAL_PRIVATE_KEY).toString();
-                        finalDevice.port = CryptoJS.AES.encrypt(finalDevice.port.toString(), LOCAL_PRIVATE_KEY).toString();
-                        finalDevice.isEncrypted = true;
-                    } catch (err) {
-                        console.error('Failed to encrypt imported device', err);
-                    }
-                }
-
-                let targetIndex = devices.findIndex(d => d.mac === finalDevice.mac && d.ddns === finalDevice.ddns);
+                let targetIndex = devices.findIndex(d => d.mac === deviceData.mac && d.ddns === deviceData.ddns);
                 if (targetIndex === -1) {
-                    devices.push(finalDevice);
+                    devices.push(deviceData);
                     saveDevices();
                     renderDevices();
                 } else {
-                    devices[targetIndex] = finalDevice;
+                    devices[targetIndex] = deviceData;
                     saveDevices();
                     renderDevices();
                 }
 
-                if (finalDevice.autoWake) {
+                if (deviceData.autoWake) {
                     setTimeout(() => {
-                        wakeDevice(finalDevice);
+                        wakeDevice(deviceData);
                     }, 600);
                 }
             }
@@ -1747,27 +1751,14 @@ const htmlContent = `<!DOCTYPE html>
             function enterEditMode(index) {
                 const device = devices[index];
                 deviceNameInput.value = device.name;
-
-                let isEncrypted = !!device.isEncrypted;
-
-                if (isEncrypted) {
-                    macAddressInput.value = '';
-                    ddnsHostInput.value = '';
-                    portNumberInput.value = '9';
-                    if (encryptDeviceCheckbox) {
-                        encryptDeviceCheckbox.checked = true;
-                    }
-                    showToast('暗号化保護端末の編集です。セキュリティ保護のためアドレス情報を再入力してください。');
-                } else {
-                    macAddressInput.value = device.mac;
-                    ddnsHostInput.value = device.ddns;
-                    portNumberInput.value = device.port;
-                    if (encryptDeviceCheckbox) {
-                        encryptDeviceCheckbox.checked = false;
-                    }
+                macAddressInput.value = device.mac;
+                ddnsHostInput.value = device.ddns;
+                portNumberInput.value = device.port;
+                autoWakeCheckbox.checked = device.autoWake || false;
+                if (encryptDeviceCheckbox) {
+                    encryptDeviceCheckbox.checked = !!device.isEncrypted;
                 }
 
-                autoWakeCheckbox.checked = device.autoWake || false;
                 editIndexInput.value = index;
 
                 saveBtn.querySelector('span').textContent = '更新する';
@@ -1787,27 +1778,9 @@ const htmlContent = `<!DOCTYPE html>
             }
 
             function wakeDevice(device) {
-                let targetMac = device.mac;
-                let targetDdns = device.ddns;
-                let targetPort = device.port;
-
-                if (device.isEncrypted) {
-                    try {
-                        const macBytes = CryptoJS.AES.decrypt(device.mac, LOCAL_PRIVATE_KEY);
-                        targetMac = macBytes.toString(CryptoJS.enc.Utf8);
-                        const ddnsBytes = CryptoJS.AES.decrypt(device.ddns, LOCAL_PRIVATE_KEY);
-                        targetDdns = ddnsBytes.toString(CryptoJS.enc.Utf8);
-                        const portBytes = CryptoJS.AES.decrypt(device.port.toString(), LOCAL_PRIVATE_KEY);
-                        targetPort = parseInt(portBytes.toString(CryptoJS.enc.Utf8), 10);
-
-                        if (!targetMac || !targetDdns || isNaN(targetPort)) {
-                            throw new Error('Decryption result invalid');
-                        }
-                    } catch (err) {
-                        showToast('暗号化されたデバイス情報の復号に失敗しました。', true);
-                        return;
-                    }
-                }
+                const targetMac = device.mac;
+                const targetDdns = device.ddns;
+                const targetPort = device.port;
 
                 const depicusMac = targetMac.replace(/:/g, '-');
                 const depicusUrl = 'https://www.depicus.com/wake-on-lan/woli?m=' + encodeURIComponent(depicusMac) + '&i=' + encodeURIComponent(targetDdns) + '&s=255.255.255.255&p=' + targetPort;
@@ -1836,21 +1809,6 @@ const htmlContent = `<!DOCTYPE html>
 
             function openShareModal(device) {
                 let tempDevice = { ...device };
-
-                if (device.isEncrypted) {
-                    try {
-                        const macBytes = CryptoJS.AES.decrypt(device.mac, LOCAL_PRIVATE_KEY);
-                        tempDevice.mac = macBytes.toString(CryptoJS.enc.Utf8);
-                        const ddnsBytes = CryptoJS.AES.decrypt(device.ddns, LOCAL_PRIVATE_KEY);
-                        tempDevice.ddns = ddnsBytes.toString(CryptoJS.enc.Utf8);
-                        const portBytes = CryptoJS.AES.decrypt(device.port.toString(), LOCAL_PRIVATE_KEY);
-                        tempDevice.port = parseInt(portBytes.toString(CryptoJS.enc.Utf8), 10);
-                        tempDevice.isEncrypted = true;
-                    } catch (e) {
-                        showToast('暗号化されたデータの復号に失敗したため共有できません。', true);
-                        return;
-                    }
-                }
 
                 currentShareDevice = tempDevice;
                 sharePinInput.value = '';
