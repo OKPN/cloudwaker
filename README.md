@@ -1,5 +1,7 @@
 # ⚡ CloudWaker
 
+🌐 **Live Application:** [https://cloudwaker.k7m.f5.si](https://cloudwaker.k7m.f5.si) *(Workers Mirror: [https://cloudwaker.okpn.workers.dev](https://cloudwaker.okpn.workers.dev))*
+
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 

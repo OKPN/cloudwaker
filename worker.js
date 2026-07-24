@@ -1266,6 +1266,7 @@ const htmlContent = `<!DOCTYPE html>
         <footer class="app-footer">
             <p>&copy; 2026 CloudWaker. Power-controlled via Depicus WoL Engine.</p>
             <p class="warning-text">※ 外部から起動するには、自宅ルーターの静的ARP/ポートフォワーディング設定が必要です。</p>
+            <p style="margin-top: 0.5rem;"><a href="https://github.com/OKPN/cloudwaker" target="_blank" rel="noopener noreferrer" style="color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; transition: color 0.2s ease;"><i data-lucide="github" style="width: 14px; height: 14px;"></i> GitHub Repository</a></p>
         </footer>
     </div>
 
