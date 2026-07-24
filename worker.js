@@ -1419,6 +1419,10 @@ const htmlContent = `<!DOCTYPE html>
 
             function toggleInputMasking() {
                 const isHidden = encryptDeviceCheckbox ? encryptDeviceCheckbox.checked : false;
+                const currentMac = macAddressInput.value;
+                const currentDdns = ddnsHostInput.value;
+                const currentPort = portNumberInput.value;
+
                 if (isHidden) {
                     macAddressInput.type = 'password';
                     ddnsHostInput.type = 'password';
@@ -1428,6 +1432,10 @@ const htmlContent = `<!DOCTYPE html>
                     ddnsHostInput.type = 'text';
                     portNumberInput.type = 'number';
                 }
+
+                macAddressInput.value = currentMac;
+                ddnsHostInput.value = currentDdns;
+                portNumberInput.value = currentPort;
             }
 
             if (encryptDeviceCheckbox) {
@@ -1768,14 +1776,16 @@ const htmlContent = `<!DOCTYPE html>
             function enterEditMode(index) {
                 const device = devices[index];
                 deviceNameInput.value = device.name;
-                macAddressInput.value = device.mac;
-                ddnsHostInput.value = device.ddns;
-                portNumberInput.value = device.port;
-                autoWakeCheckbox.checked = device.autoWake || false;
+                
                 if (encryptDeviceCheckbox) {
                     encryptDeviceCheckbox.checked = !!device.isEncrypted;
                 }
                 toggleInputMasking();
+
+                macAddressInput.value = device.mac;
+                ddnsHostInput.value = device.ddns;
+                portNumberInput.value = device.port;
+                autoWakeCheckbox.checked = device.autoWake || false;
 
                 editIndexInput.value = index;
 
