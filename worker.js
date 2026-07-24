@@ -1047,7 +1047,7 @@ const htmlContent = `<!DOCTYPE html>
                         <label for="mac-address">MACアドレス</label>
                         <div class="input-wrapper">
                             <i data-lucide="cpu" class="input-icon"></i>
-                            <input type="text" id="mac-address" placeholder="XX:XX:XX:XX:XX:XX" required 
+                            <input type="password" id="mac-address" placeholder="XX:XX:XX:XX:XX:XX" required 
                                    pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^([0-9A-Fa-f]{12})$">
                         </div>
                         <span class="help-text">16進数12桁（コロンかハイフン区切り、または区切りなし）</span>
@@ -1057,7 +1057,7 @@ const htmlContent = `<!DOCTYPE html>
                         <label for="ddns-host">DDNS / IPアドレス</label>
                         <div class="input-wrapper">
                             <i data-lucide="globe" class="input-icon"></i>
-                            <input type="text" id="ddns-host" placeholder="your-domain.ddns.net または IP" required>
+                            <input type="password" id="ddns-host" placeholder="your-domain.ddns.net または IP" required>
                         </div>
                     </div>
 
@@ -1065,7 +1065,7 @@ const htmlContent = `<!DOCTYPE html>
                         <label for="port-number">ポート番号</label>
                         <div class="input-wrapper">
                             <i data-lucide="hash" class="input-icon"></i>
-                            <input type="number" id="port-number" value="9" min="1" max="65535" required>
+                            <input type="password" id="port-number" value="9" min="1" max="65535" required>
                         </div>
                         <span class="help-text">通常は 9 または 7 です。</span>
                     </div>
@@ -1079,8 +1079,8 @@ const htmlContent = `<!DOCTYPE html>
 
                     <div class="form-group-checkbox">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="encrypt-device-checkbox">
-                            <span>登録情報を非表示にする（プライバシー保護）</span>
+                            <input type="checkbox" id="show-raw-details-checkbox">
+                            <span>登録情報を表示する（一時表示）</span>
                         </label>
                     </div>
 
@@ -1101,10 +1101,16 @@ const htmlContent = `<!DOCTYPE html>
             </section>
 
             <!-- デバイス一覧 -->
-            <section class="card list-card">
-                <div class="card-header">
-                    <i data-lucide="list" class="header-icon"></i>
-                    <h2>登録済みデバイス</h2>
+            <section class="device-list-card card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="list" class="header-icon"></i>
+                        <h2>登録済みデバイス</h2>
+                    </div>
+                    <button id="batch-share-btn" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem;">
+                        <i data-lucide="share-2" style="width: 14px; height: 14px;"></i>
+                        <span>選択共有</span>
+                    </button>
                 </div>
                 <div id="device-list" class="device-list">
                     <!-- JavaScriptでデバイスカードを挿入 -->
@@ -1279,10 +1285,16 @@ const htmlContent = `<!DOCTYPE html>
                 <button id="close-modal-btn" class="btn-close">&times;</button>
             </div>
             <div class="modal-body">
-                <p class="modal-desc">パラメータは暗号化して生成されます。さらにPIN保護をかけることも可能です。</p>
+                <div id="share-device-selector" style="margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.4rem; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 8px;"></div>
                 <div class="pin-input-group">
-                    <label for="share-pin-input">個別の手動ロックPIN（最大6桁の数字 / 空欄で自動暗号化）:</label>
-                    <input type="password" id="share-pin-input" maxlength="6" placeholder="例: 114514 (空欄で自動暗号化)">
+                    <label for="share-pin-input">個別の手動ロックPIN（最大6桁）:</label>
+                    <input type="password" id="share-pin-input" maxlength="6" placeholder="空欄で自動暗号化">
+                </div>
+                <div style="margin: 0.5rem 0;">
+                    <label class="checkbox-label" style="font-size: 0.85rem;">
+                        <input type="checkbox" id="share-autowake-checkbox">
+                        <span>インポート時に自動起動する</span>
+                    </label>
                 </div>
                 <div class="qrcode-container">
                     <div id="qrcode"></div>
@@ -1293,18 +1305,6 @@ const htmlContent = `<!DOCTYPE html>
                         <i data-lucide="copy"></i>
                         <span>コピー</span>
                     </button>
-                </div>
-                <!-- 共有時の注意書き -->
-                <div style="margin-top: 1rem; padding: 0.75rem 1rem; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; font-size: 0.78rem; color: #f87171; line-height: 1.45; text-align: left;">
-                    <div style="display: flex; align-items: center; gap: 0.35rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--danger);">
-                        <i data-lucide="alert-triangle" style="width: 1rem; height: 1rem;"></i>
-                        <span>第三者へ公開・共有する際の注意点</span>
-                    </div>
-                    <ul style="padding-left: 1.1rem; margin: 0; display: flex; flex-direction: column; gap: 0.25rem;">
-                        <li>共有URLには暗号化された接続情報が含まれます。不特定多数へ公開する場合は、必ず<strong>手動ロックPIN（最大6桁）</strong>を設定してください。</li>
-                        <li>URLを知っている人物は自由に起動パケットを発信できるようになります。信頼できる相手のみに共有してください。</li>
-                        <li>「自動起動」がONの場合、リンクを開くだけで即座にPCが遠隔起動します。</li>
-                    </ul>
                 </div>
             </div>
         </div>
@@ -1334,19 +1334,17 @@ const htmlContent = `<!DOCTYPE html>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const SYSTEM_SECRET_KEY = 'EtherWake_Default_Secret_2026';
-            const LOCAL_PRIVATE_KEY = 'EtherWake_Local_Storage_Key_2026';
-
             const deviceForm = document.getElementById('device-form');
             const deviceNameInput = document.getElementById('device-name');
             const macAddressInput = document.getElementById('mac-address');
             const ddnsHostInput = document.getElementById('ddns-host');
             const portNumberInput = document.getElementById('port-number');
-            const autoWakeCheckbox = document.getElementById('auto-wake-checkbox');
-            const encryptDeviceCheckbox = document.getElementById('encrypt-device-checkbox');
+            const showRawDetailsCheckbox = document.getElementById('show-raw-details-checkbox');
             const saveBtn = document.getElementById('save-btn');
             const cancelEditBtn = document.getElementById('cancel-edit-btn');
             const editIndexInput = document.getElementById('edit-index');
             const deviceListContainer = document.getElementById('device-list');
+            const batchShareBtn = document.getElementById('batch-share-btn');
 
             const shareModal = document.getElementById('share-modal');
             const closeModalBtn = document.getElementById('close-modal-btn');
@@ -1354,19 +1352,28 @@ const htmlContent = `<!DOCTYPE html>
             const copyUrlBtn = document.getElementById('copy-url-btn');
             const qrcodeDiv = document.getElementById('qrcode');
             const sharePinInput = document.getElementById('share-pin-input');
+            const shareAutoWakeCheckbox = document.getElementById('share-autowake-checkbox');
+            const shareDeviceSelector = document.getElementById('share-device-selector');
 
             const pinModal = document.getElementById('pin-modal');
             const unlockPinInput = document.getElementById('unlock-pin-input');
             const unlockBtn = document.getElementById('unlock-btn');
 
             let devices = [];
-            let currentShareDevice = null;
+            let selectedShareIndices = [];
             let pendingEncryptedData = null;
 
             loadDevices();
             checkImport();
             renderDevices();
+            toggleInputMasking();
             lucide.createIcons();
+
+            if (batchShareBtn) {
+                batchShareBtn.addEventListener('click', () => {
+                    openShareModal(null);
+                });
+            }
 
             closeModalBtn.addEventListener('click', closeShareModal);
             shareModal.addEventListener('click', (e) => {
@@ -1374,18 +1381,22 @@ const htmlContent = `<!DOCTYPE html>
             });
 
             sharePinInput.addEventListener('input', () => {
-                if (currentShareDevice) {
-                    updateShareUrl(currentShareDevice);
-                }
+                updateShareUrl();
             });
+
+            if (shareAutoWakeCheckbox) {
+                shareAutoWakeCheckbox.addEventListener('change', () => {
+                    updateShareUrl();
+                });
+            }
 
             copyUrlBtn.addEventListener('click', () => {
                 shareUrlInput.select();
                 try {
                     document.execCommand('copy');
-                    showToast('共有URLをクリップボードにコピーしました！');
+                    showToast('共有URLをコピーしました！');
                 } catch (err) {
-                    showToast('コピーに失敗しました。手動でコピーしてください。', true);
+                    showToast('コピー失敗', true);
                 }
             });
 
@@ -1393,44 +1404,20 @@ const htmlContent = `<!DOCTYPE html>
                 processUnlock();
             });
 
-            unlockPinInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    processUnlock();
-                }
-            });
-
-            const copyPromptBtn = document.getElementById('copy-prompt-btn');
-            const promptText = document.getElementById('prompt-text');
-
-            if (copyPromptBtn && promptText) {
-                copyPromptBtn.addEventListener('click', () => {
-                    const text = promptText.innerText;
-                    if (navigator.clipboard) {
-                        navigator.clipboard.writeText(text).then(() => {
-                            showToast('プロンプトテンプレートをコピーしました！');
-                        }).catch(() => {
-                            showToast('コピーに失敗しました。', true);
-                        });
-                    } else {
-                        showToast('お使いのブラウザではコピーがサポートされていません。', true);
-                    }
-                });
-            }
-
             function toggleInputMasking() {
-                const isHidden = encryptDeviceCheckbox ? encryptDeviceCheckbox.checked : false;
+                const isShow = showRawDetailsCheckbox ? showRawDetailsCheckbox.checked : false;
                 const currentMac = macAddressInput.value;
                 const currentDdns = ddnsHostInput.value;
                 const currentPort = portNumberInput.value;
 
-                if (isHidden) {
-                    macAddressInput.type = 'password';
-                    ddnsHostInput.type = 'password';
-                    portNumberInput.type = 'password';
-                } else {
+                if (isShow) {
                     macAddressInput.type = 'text';
                     ddnsHostInput.type = 'text';
                     portNumberInput.type = 'number';
+                } else {
+                    macAddressInput.type = 'password';
+                    ddnsHostInput.type = 'password';
+                    portNumberInput.type = 'password';
                 }
 
                 macAddressInput.value = currentMac;
@@ -1438,8 +1425,8 @@ const htmlContent = `<!DOCTYPE html>
                 portNumberInput.value = currentPort;
             }
 
-            if (encryptDeviceCheckbox) {
-                encryptDeviceCheckbox.addEventListener('change', toggleInputMasking);
+            if (showRawDetailsCheckbox) {
+                showRawDetailsCheckbox.addEventListener('change', toggleInputMasking);
             }
 
             deviceForm.addEventListener('submit', (e) => {
@@ -1449,98 +1436,44 @@ const htmlContent = `<!DOCTYPE html>
                 const rawMac = macAddressInput.value.trim();
                 const ddns = ddnsHostInput.value.trim();
                 const port = parseInt(portNumberInput.value.trim(), 10) || 9;
-                const autoWake = autoWakeCheckbox.checked;
-                const encryptDevice = encryptDeviceCheckbox ? encryptDeviceCheckbox.checked : false;
                 const editIndex = editIndexInput.value;
 
                 const formattedMac = parseAndFormatMac(rawMac);
                 if (!formattedMac) {
-                    showToast('無効なMACアドレスの形式です。', true);
+                    showToast('無効なMACアドレス', true);
                     return;
                 }
 
-                const deviceData = { 
-                    name, 
-                    mac: formattedMac, 
-                    ddns, 
-                    port, 
-                    autoWake,
-                    isEncrypted: encryptDevice 
-                };
-
-                if (autoWake) {
-                    devices.forEach(d => d.autoWake = false);
-                }
+                const deviceData = { name, mac: formattedMac, ddns, port };
 
                 if (editIndex !== "") {
                     devices[parseInt(editIndex, 10)] = deviceData;
-                    showToast('デバイス情報を更新しました。');
+                    showToast('更新しました。');
                     exitEditMode();
                 } else {
                     devices.push(deviceData);
-                    showToast('新しいデバイスを登録しました。');
+                    showToast('追加しました。');
                 }
 
                 saveDevices();
                 renderDevices();
                 deviceForm.reset();
                 portNumberInput.value = "9";
-                autoWakeCheckbox.checked = false;
-                if (encryptDeviceCheckbox) encryptDeviceCheckbox.checked = false;
+                if (showRawDetailsCheckbox) showRawDetailsCheckbox.checked = false;
+                toggleInputMasking();
             });
 
             cancelEditBtn.addEventListener('click', () => {
                 exitEditMode();
                 deviceForm.reset();
                 portNumberInput.value = "9";
-                autoWakeCheckbox.checked = false;
-                if (encryptDeviceCheckbox) encryptDeviceCheckbox.checked = false;
+                if (showRawDetailsCheckbox) showRawDetailsCheckbox.checked = false;
+                toggleInputMasking();
             });
 
             function loadDevices() {
                 let stored = localStorage.getItem('cloudwaker_devices');
-                if (!stored) {
-                    // 旧キー名 (etherwake_devices) からのデータ移行
-                    stored = localStorage.getItem('etherwake_devices');
-                    if (stored) {
-                        localStorage.setItem('cloudwaker_devices', stored);
-                    }
-                }
-                if (stored) {
-                    try {
-                        devices = JSON.parse(stored);
-                        // 旧バージョンの暗号化データ（isEncrypted: true で mac が暗号化文字列）を自動マイグレーション
-                        const LEGACY_KEY = 'EtherWake_Local_Storage_Key_2026';
-                        let migrated = false;
-                        devices.forEach(d => {
-                            if (d.isEncrypted && d.mac && !d.mac.includes(':')) {
-                                try {
-                                    const macBytes = CryptoJS.AES.decrypt(d.mac, LEGACY_KEY);
-                                    const decMac = macBytes.toString(CryptoJS.enc.Utf8);
-                                    const ddnsBytes = CryptoJS.AES.decrypt(d.ddns, LEGACY_KEY);
-                                    const decDdns = ddnsBytes.toString(CryptoJS.enc.Utf8);
-                                    const portBytes = CryptoJS.AES.decrypt(d.port.toString(), LEGACY_KEY);
-                                    const decPort = portBytes.toString(CryptoJS.enc.Utf8);
-
-                                    if (decMac && decDdns && decPort) {
-                                        d.mac = decMac;
-                                        d.ddns = decDdns;
-                                        d.port = parseInt(decPort, 10);
-                                        migrated = true;
-                                    }
-                                } catch (err) {
-                                    console.log('Legacy decryption skipped', err);
-                                }
-                            }
-                        });
-                        if (migrated) {
-                            saveDevices();
-                        }
-                    } catch (e) {
-                        console.error('Failed to parse stored devices', e);
-                        devices = [];
-                    }
-                }
+                if (stored) devices = JSON.parse(stored);
             }
 
             function saveDevices() {
@@ -1558,176 +1491,73 @@ const htmlContent = `<!DOCTYPE html>
                             const bytes = CryptoJS.AES.decrypt(encryptedData, SYSTEM_SECRET_KEY);
                             const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
                             if (decryptedText) {
-                                const deviceData = JSON.parse(decryptedText);
-                                if (deviceData && deviceData.mac && deviceData.ddns) {
-                                    importDevice(deviceData);
-                                    window.history.replaceState({}, document.title, window.location.pathname);
-                                    return;
-                                }
+                                importPayload(JSON.parse(decryptedText));
+                                window.history.replaceState({}, document.title, window.location.pathname);
+                                return;
                             }
-                        } catch (e) {
-                            console.log('Auto decrypt failed', e);
-                        }
+                        } catch (e) { console.log('Decrypt failed', e); }
                     }
-
                     pendingEncryptedData = encryptedData;
                     openPinModal();
-                    return;
-                }
-
-                const name = params.get('name');
-                const mac = params.get('mac');
-                const ddns = params.get('ddns');
-                const port = params.get('port') || '9';
-                const autowake = params.get('autowake');
-
-                if (name && mac && ddns) {
-                    const formattedMac = parseAndFormatMac(mac);
-                    if (formattedMac) {
-                        const deviceData = {
-                            name: decodeURIComponent(name),
-                            mac: formattedMac,
-                            ddns: decodeURIComponent(ddns),
-                            port: parseInt(port, 10),
-                            autoWake: (autowake === 'true')
-                        };
-
-                        importDevice(deviceData);
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                    }
                 }
             }
 
             function processUnlock() {
                 const pin = unlockPinInput.value.trim();
-                if (!pin) {
-                    showToast('PINコードを入力してください。', true);
-                    return;
-                }
-
-                if (!pendingEncryptedData) return;
-
+                if (!pin) return;
                 try {
                     const bytes = CryptoJS.AES.decrypt(pendingEncryptedData, pin);
                     const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
-
-                    if (!decryptedText) {
-                        showToast('PINコードが正しくありません。', true);
-                        return;
-                    }
-
-                    const deviceData = JSON.parse(decryptedText);
-
-                    if (deviceData && deviceData.mac && deviceData.ddns) {
-                        importDevice(deviceData);
-                        closePinModal();
-                        showToast('復号に成功し、デバイスを登録しました！');
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                    } else {
-                        showToast('PINコードが正しくありません。', true);
-                    }
-                } catch (err) {
-                    console.error('Decryption error', err);
-                    showToast('PINコードが正しくありません。', true);
-                }
-            }
-
-            function importDevice(deviceData) {
-                if (deviceData.autoWake) {
-                    devices.forEach(d => d.autoWake = false);
-                }
-
-                let targetIndex = devices.findIndex(d => d.mac === deviceData.mac && d.ddns === deviceData.ddns);
-                if (targetIndex === -1) {
-                    devices.push(deviceData);
-                    saveDevices();
-                    renderDevices();
-                } else {
-                    devices[targetIndex] = deviceData;
-                    saveDevices();
-                    renderDevices();
-                }
-
-                if (deviceData.autoWake) {
-                    setTimeout(() => {
-                        wakeDevice(deviceData);
-                    }, 600);
-                }
-            }
-
-            function openPinModal() {
-                unlockPinInput.value = '';
-                pinModal.classList.remove('hidden');
-                setTimeout(() => {
-                    pinModal.classList.add('show');
-                    unlockPinInput.focus();
-                }, 10);
-                lucide.createIcons();
-            }
-
-            function closePinModal() {
-                pinModal.classList.remove('show');
-                setTimeout(() => {
-                    pinModal.classList.add('hidden');
+                    if (!decryptedText) { showToast('PIN間違い', true); return; }
+                    importPayload(JSON.parse(decryptedText));
+                    closePinModal();
                     pendingEncryptedData = null;
-                }, 300);
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } catch (e) { showToast('PIN間違い', true); }
+            }
+
+            function importPayload(payload) {
+                let importedList = [];
+                let shouldAutoWake = false;
+
+                if (Array.isArray(payload)) {
+                    importedList = payload;
+                } else if (payload && Array.isArray(payload.devices)) {
+                    importedList = payload.devices;
+                    shouldAutoWake = !!payload.autoWake;
+                }
+
+                importedList.forEach(dev => {
+                    let idx = devices.findIndex(d => d.mac === dev.mac && d.ddns === dev.ddns);
+                    if (idx === -1) devices.push(dev);
+                    else devices[idx] = dev;
+                });
+
+                saveDevices();
+                renderDevices();
+                if (shouldAutoWake) {
+                    showToast('順次起動パケットを送信中...');
+                    importedList.forEach((dev, i) => setTimeout(() => wakeDevice(dev), i * 1200));
+                } else {
+                    showToast('インポートしました！');
+                }
             }
 
             function renderDevices() {
                 deviceListContainer.innerHTML = '';
-
-                if (devices.length === 0) {
-                    deviceListContainer.innerHTML = 
-                        '<div class="empty-state">' +
-                            '<i data-lucide="server-off" class="empty-icon"></i>' +
-                            '<p>登録されたデバイスがありません。左のフォームから追加してください。</p>' +
-                        '</div>';
-                    lucide.createIcons();
-                    return;
-                }
-
                 devices.forEach((device, index) => {
                     const item = document.createElement('div');
                     item.className = 'device-item';
-                    
-                    const badgeHtml = device.autoWake ? 
-                        '<span class="badge-autowake"><i data-lucide="zap" style="width: 10px; height: 10px;"></i>AUTO</span>' : '';
-                    const lockBadgeHtml = device.isEncrypted ?
-                        '<span class="badge-autowake" style="background: rgba(16, 185, 129, 0.12); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.25);"><i data-lucide="lock" style="width: 10px; height: 10px;"></i>PROTECTED</span>' : '';
-
-                    const displayMac = device.isEncrypted ? '●●:●●:●●:●●:●●:●●' : device.mac;
-                    const displayHost = device.isEncrypted ? '●●●●●●●● (非表示保護)' : (escapeHtml(device.ddns) + ':' + device.port);
-                    const editButtonAttr = 'title="編集"';
-
                     item.innerHTML = 
-                        '<div class="device-info">' +
-                            '<div class="device-title-row">' +
-                                '<span class="device-title">' + escapeHtml(device.name) + '</span>' +
-                                badgeHtml +
-                                lockBadgeHtml +
-                            '</div>' +
-                            '<div class="device-details">' +
-                                '<span><strong style="color: var(--primary);">MAC:</strong> ' + displayMac + '</span>' +
-                                '<span><strong style="color: var(--accent);">HOST:</strong> ' + displayHost + '</span>' +
-                            '</div>' +
-                        '</div>' +
+                        '<div class="device-info"><span class="device-title">' + escapeHtml(device.name) + '</span></div>' +
                         '<div class="device-actions">' +
-                            '<button class="btn btn-action btn-wake" data-index="' + index + '" title="起動パケットを送信">' +
-                                '<i data-lucide="power"></i>' +
-                            '</button>' +
-                            '<button class="btn btn-action btn-share" data-index="' + index + '" title="設定を共有">' +
-                                '<i data-lucide="share-2"></i>' +
-                            '</button>' +
-                            '<button class="btn btn-action btn-edit" data-index="' + index + '" ' + editButtonAttr + '>' +
-                                '<i data-lucide="edit-2"></i>' +
-                            '</button>' +
-                            '<button class="btn btn-action btn-delete" data-index="' + index + '" title="削除">' +
-                                '<i data-lucide="trash-2"></i>' +
-                            '</button>' +
+                            '<button class="btn-action btn-wake" data-index="' + index + '"><i data-lucide="power"></i></button>' +
+                            '<button class="btn-action btn-share" data-index="' + index + '"><i data-lucide="share-2"></i></button>' +
+                            '<button class="btn-action btn-edit" data-index="' + index + '"><i data-lucide="pencil"></i></button>' +
+                            '<button class="btn-action btn-delete" data-index="' + index + '"><i data-lucide="trash-2"></i></button>' +
                         '</div>';
                     deviceListContainer.appendChild(item);
                 });
-
                 lucide.createIcons();
                 bindActionEvents();
             }
@@ -1839,26 +1669,78 @@ const htmlContent = `<!DOCTYPE html>
                 }, 8000);
             }
 
-            function openShareModal(device) {
-                let tempDevice = { ...device };
+            function openShareModal(targetIndex = null) {
+                if (devices.length === 0) {
+                    showToast('共有できるデバイスがありません。', true);
+                    return;
+                }
 
-                currentShareDevice = tempDevice;
+                if (targetIndex !== null && targetIndex !== undefined) {
+                    selectedShareIndices = [targetIndex];
+                } else {
+                    selectedShareIndices = devices.map((_, i) => i);
+                }
+
+                renderShareDeviceSelector();
+
                 sharePinInput.value = '';
-                updateShareUrl(tempDevice);
+                if (shareAutoWakeCheckbox) shareAutoWakeCheckbox.checked = false;
+
+                updateShareUrl();
 
                 shareModal.classList.remove('hidden');
                 setTimeout(() => {
                     shareModal.classList.add('show');
                 }, 10);
-                
                 lucide.createIcons();
             }
 
-            function updateShareUrl(device) {
+            function renderShareDeviceSelector() {
+                if (!shareDeviceSelector) return;
+                shareDeviceSelector.innerHTML = '';
+
+                devices.forEach((device, index) => {
+                    const isChecked = selectedShareIndices.includes(index);
+                    const label = document.createElement('label');
+                    label.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; cursor: pointer; color: #e2e8f0;';
+                    label.innerHTML = 
+                        '<input type="checkbox" class="share-device-checkbox" data-index="' + index + '" ' + (isChecked ? 'checked' : '') + '>' +
+                        '<span>' + escapeHtml(device.name) + '</span>';
+                    shareDeviceSelector.appendChild(label);
+                });
+
+                shareDeviceSelector.querySelectorAll('.share-device-checkbox').forEach(cb => {
+                    cb.addEventListener('change', (e) => {
+                        const idx = parseInt(e.target.dataset.index, 10);
+                        if (e.target.checked) {
+                            if (!selectedShareIndices.includes(idx)) selectedShareIndices.push(idx);
+                        } else {
+                            selectedShareIndices = selectedShareIndices.filter(i => i !== idx);
+                        }
+                        updateShareUrl();
+                    });
+                });
+            }
+
+            function updateShareUrl() {
                 const baseUrl = window.location.origin + window.location.pathname;
                 const pin = sharePinInput.value.trim();
-                const jsonStr = JSON.stringify(device);
+                const autoWake = shareAutoWakeCheckbox ? shareAutoWakeCheckbox.checked : false;
 
+                const exportDevices = selectedShareIndices.map(i => devices[i]).filter(Boolean);
+
+                if (exportDevices.length === 0) {
+                    shareUrlInput.value = '端末が選択されていません';
+                    qrcodeDiv.innerHTML = '';
+                    return;
+                }
+
+                const payload = {
+                    devices: exportDevices,
+                    autoWake: autoWake
+                };
+
+                const jsonStr = JSON.stringify(payload);
                 let shareUrl = '';
 
                 if (pin) {
