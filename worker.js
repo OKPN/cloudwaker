@@ -1417,6 +1417,23 @@ const htmlContent = `<!DOCTYPE html>
                 });
             }
 
+            function toggleInputMasking() {
+                const isHidden = encryptDeviceCheckbox ? encryptDeviceCheckbox.checked : false;
+                if (isHidden) {
+                    macAddressInput.type = 'password';
+                    ddnsHostInput.type = 'password';
+                    portNumberInput.type = 'password';
+                } else {
+                    macAddressInput.type = 'text';
+                    ddnsHostInput.type = 'text';
+                    portNumberInput.type = 'number';
+                }
+            }
+
+            if (encryptDeviceCheckbox) {
+                encryptDeviceCheckbox.addEventListener('change', toggleInputMasking);
+            }
+
             deviceForm.addEventListener('submit', (e) => {
                 e.preventDefault();
 
@@ -1671,7 +1688,7 @@ const htmlContent = `<!DOCTYPE html>
                         '<span class="badge-autowake" style="background: rgba(16, 185, 129, 0.12); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.25);"><i data-lucide="lock" style="width: 10px; height: 10px;"></i>PROTECTED</span>' : '';
 
                     const displayMac = device.isEncrypted ? '●●:●●:●●:●●:●●:●●' : device.mac;
-                    const displayHost = device.isEncrypted ? '●●●●●●●● (暗号化保護)' : (escapeHtml(device.ddns) + ':' + device.port);
+                    const displayHost = device.isEncrypted ? '●●●●●●●● (非表示保護)' : (escapeHtml(device.ddns) + ':' + device.port);
                     const editButtonAttr = 'title="編集"';
 
                     item.innerHTML = 
@@ -1758,6 +1775,7 @@ const htmlContent = `<!DOCTYPE html>
                 if (encryptDeviceCheckbox) {
                     encryptDeviceCheckbox.checked = !!device.isEncrypted;
                 }
+                toggleInputMasking();
 
                 editIndexInput.value = index;
 
@@ -1774,6 +1792,10 @@ const htmlContent = `<!DOCTYPE html>
                 saveBtn.querySelector('span').textContent = '保存する';
                 saveBtn.querySelector('i').setAttribute('data-lucide', 'save');
                 cancelEditBtn.classList.add('hidden');
+                if (encryptDeviceCheckbox) {
+                    encryptDeviceCheckbox.checked = false;
+                }
+                toggleInputMasking();
                 lucide.createIcons();
             }
 
