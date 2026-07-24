@@ -1072,13 +1072,6 @@ const htmlContent = `<!DOCTYPE html>
 
                     <div class="form-group-checkbox">
                         <label class="checkbox-label">
-                            <input type="checkbox" id="auto-wake-checkbox">
-                            <span>共有リンクから開いた時に自動起動する</span>
-                        </label>
-                    </div>
-
-                    <div class="form-group-checkbox">
-                        <label class="checkbox-label">
                             <input type="checkbox" id="show-raw-details-checkbox">
                             <span>登録情報を表示する（一時表示）</span>
                         </label>
@@ -1549,12 +1542,20 @@ const htmlContent = `<!DOCTYPE html>
                     const item = document.createElement('div');
                     item.className = 'device-item';
                     item.innerHTML = 
-                        '<div class="device-info"><span class="device-title">' + escapeHtml(device.name) + '</span></div>' +
+                        '<div class="device-info">' +
+                            '<div class="device-title-row">' +
+                                '<span class="device-title">' + escapeHtml(device.name) + '</span>' +
+                            '</div>' +
+                            '<div class="device-details" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; display: flex; flex-direction: column; gap: 0.15rem;">' +
+                                '<span><strong style="color: var(--primary);">MAC:</strong> ●●:●●:●●:●●:●●:●●</span>' +
+                                '<span><strong style="color: var(--accent);">HOST:</strong> ●●●●●●●● (保護中)</span>' +
+                            '</div>' +
+                        '</div>' +
                         '<div class="device-actions">' +
-                            '<button class="btn-action btn-wake" data-index="' + index + '"><i data-lucide="power"></i></button>' +
-                            '<button class="btn-action btn-share" data-index="' + index + '"><i data-lucide="share-2"></i></button>' +
-                            '<button class="btn-action btn-edit" data-index="' + index + '"><i data-lucide="pencil"></i></button>' +
-                            '<button class="btn-action btn-delete" data-index="' + index + '"><i data-lucide="trash-2"></i></button>' +
+                            '<button class="btn-action btn-wake" data-index="' + index + '" title="起動パケット送信"><i data-lucide="power"></i></button>' +
+                            '<button class="btn-action btn-share" data-index="' + index + '" title="共有"><i data-lucide="share-2"></i></button>' +
+                            '<button class="btn-action btn-edit" data-index="' + index + '" title="編集"><i data-lucide="pencil"></i></button>' +
+                            '<button class="btn-action btn-delete" data-index="' + index + '" title="削除"><i data-lucide="trash-2"></i></button>' +
                         '</div>';
                     deviceListContainer.appendChild(item);
                 });
@@ -1573,7 +1574,7 @@ const htmlContent = `<!DOCTYPE html>
                 document.querySelectorAll('.btn-share').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const index = parseInt(e.currentTarget.dataset.index, 10);
-                        openShareModal(devices[index]);
+                        openShareModal(index);
                     });
                 });
 
