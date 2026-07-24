@@ -1238,14 +1238,14 @@ const htmlContent = `<!DOCTYPE html>
                     </div>
                 </div>
 
-                <div class="faq-item">
+                 <div class="faq-item">
                     <div class="faq-question">
                         <span class="faq-question-badge">Q4</span>
                         <span>「共有」ボタンから発行した「共有URL」には、端末の情報が含まれますか？</span>
                     </div>
                     <div class="faq-answer">
                         <strong>A. はい、含まれます。そのため基本的には他人に共有しないことをお勧めします。</strong><br>
-                        共有URLには、MACアドレスや接続先などのパラメータが暗号化された状態で埋め込まれています。URLを知っていれば誰でも起動信号を送信できる状態になるため、基本的には共有URLを第三者に教えないでください。やむを得ず共有する場合は、必ず手動ロックPIN（6桁）を設定するなど細心の注意を払ってください。
+                        共有URLには、MACアドレスや接続先などのパラメータが暗号化された状態で埋め込まれています。URLを知っていれば誰でも起動信号を送信できる状態になるため、基本的には共有URLを第三者に教えないでください。やむを得ず共有する場合は、必ず手動ロックPIN（最大6桁）を設定するなど細心の注意を払ってください。
                     </div>
                 </div>
 
@@ -1281,8 +1281,8 @@ const htmlContent = `<!DOCTYPE html>
             <div class="modal-body">
                 <p class="modal-desc">パラメータは暗号化して生成されます。さらにPIN保護をかけることも可能です。</p>
                 <div class="pin-input-group">
-                    <label for="share-pin-input">個別の手動ロックPIN（数字6桁 / 空欄で自動暗号化）:</label>
-                    <input type="password" id="share-pin-input" maxlength="6" placeholder="空欄のままでもURLは暗号化されます">
+                    <label for="share-pin-input">個別の手動ロックPIN（最大6桁の数字 / 空欄で自動暗号化）:</label>
+                    <input type="password" id="share-pin-input" maxlength="6" placeholder="例: 114514 (空欄で自動暗号化)">
                 </div>
                 <div class="qrcode-container">
                     <div id="qrcode"></div>
@@ -1301,7 +1301,7 @@ const htmlContent = `<!DOCTYPE html>
                         <span>第三者へ公開・共有する際の注意点</span>
                     </div>
                     <ul style="padding-left: 1.1rem; margin: 0; display: flex; flex-direction: column; gap: 0.25rem;">
-                        <li>共有URLには暗号化された接続情報が含まれます。不特定多数へ公開する場合は、必ず<strong>手動ロックPIN（6桁）</strong>を設定してください。</li>
+                        <li>共有URLには暗号化された接続情報が含まれます。不特定多数へ公開する場合は、必ず<strong>手動ロックPIN（最大6桁）</strong>を設定してください。</li>
                         <li>URLを知っている人物は自由に起動パケットを発信できるようになります。信頼できる相手のみに共有してください。</li>
                         <li>「自動起動」がONの場合、リンクを開くだけで即座にPCが遠隔起動します。</li>
                     </ul>
@@ -1318,9 +1318,9 @@ const htmlContent = `<!DOCTYPE html>
                 <h2>保護された共有リンク</h2>
             </div>
             <div class="modal-body" style="text-align: center;">
-                <p class="modal-desc">この設定は手動PINで保護されています。送信者が設定したPINコード（数字6桁）を入力してください。</p>
+                <p class="modal-desc">この設定は手動PINで保護されています。送信者が設定したPINコードを入力してください。</p>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <input type="password" id="unlock-pin-input" placeholder="6桁のPINを入力" maxlength="6" style="text-align: center; font-size: 1.25rem; letter-spacing: 0.2em; padding: 0.75rem; background: rgba(10, 15, 30, 0.8); border: 1px solid var(--border-color); border-radius: 12px; color: white; width: 100%;">
+                    <input type="password" id="unlock-pin-input" placeholder="例: 114514" maxlength="6" style="text-align: center; font-size: 1.25rem; letter-spacing: 0.2em; padding: 0.75rem; background: rgba(10, 15, 30, 0.8); border: 1px solid var(--border-color); border-radius: 12px; color: white; width: 100%;">
                 </div>
                 <button id="unlock-btn" class="btn btn-primary" style="width: 100%;">
                     <i data-lucide="key"></i>
