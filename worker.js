@@ -1080,7 +1080,7 @@ const htmlContent = `<!DOCTYPE html>
                     <div class="form-group-checkbox">
                         <label class="checkbox-label">
                             <input type="checkbox" id="encrypt-device-checkbox">
-                            <span>登録情報を暗号化して非表示にする（プライバシー保護）</span>
+                            <span>登録情報を非表示にする（プライバシー保護）</span>
                         </label>
                     </div>
 
