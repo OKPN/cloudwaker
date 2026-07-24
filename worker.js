@@ -1047,8 +1047,7 @@ const htmlContent = `<!DOCTYPE html>
                         <label for="mac-address">MACアドレス</label>
                         <div class="input-wrapper">
                             <i data-lucide="cpu" class="input-icon"></i>
-                            <input type="password" id="mac-address" placeholder="XX:XX:XX:XX:XX:XX" required 
-                                   pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^([0-9A-Fa-f]{12})$">
+                            <input type="text" id="mac-address" placeholder="XX:XX:XX:XX:XX:XX" required>
                         </div>
                         <span class="help-text">16進数12桁（コロンかハイフン区切り、または区切りなし）</span>
                     </div>
@@ -1057,7 +1056,7 @@ const htmlContent = `<!DOCTYPE html>
                         <label for="ddns-host">DDNS / IPアドレス</label>
                         <div class="input-wrapper">
                             <i data-lucide="globe" class="input-icon"></i>
-                            <input type="password" id="ddns-host" placeholder="your-domain.ddns.net または IP" required>
+                            <input type="text" id="ddns-host" placeholder="your-domain.ddns.net または IP" required>
                         </div>
                     </div>
 
@@ -1065,7 +1064,7 @@ const htmlContent = `<!DOCTYPE html>
                         <label for="port-number">ポート番号</label>
                         <div class="input-wrapper">
                             <i data-lucide="hash" class="input-icon"></i>
-                            <input type="password" id="port-number" value="9" min="1" max="65535" required>
+                            <input type="text" id="port-number" value="9" required>
                         </div>
                         <span class="help-text">通常は 9 または 7 です。</span>
                     </div>
@@ -1273,7 +1272,7 @@ const htmlContent = `<!DOCTYPE html>
     <div id="share-modal" class="modal hidden">
         <div class="modal-content card">
             <div class="modal-header">
-                <i data-lucide="share-2" class="header-icon"></i>
+<i data-lucide="share-2" class="header-icon"></i>
                 <h2>デバイス設定の共有</h2>
                 <button id="close-modal-btn" class="btn-close">&times;</button>
             </div>
@@ -1355,6 +1354,7 @@ const htmlContent = `<!DOCTYPE html>
             let devices = [];
             let selectedShareIndices = [];
             let pendingEncryptedData = null;
+            let editingRawData = null;
 
             loadDevices();
             checkImport();
@@ -1399,23 +1399,19 @@ const htmlContent = `<!DOCTYPE html>
 
             function toggleInputMasking() {
                 const isShow = showRawDetailsCheckbox ? showRawDetailsCheckbox.checked : false;
-                const currentMac = macAddressInput.value;
-                const currentDdns = ddnsHostInput.value;
-                const currentPort = portNumberInput.value;
-
                 if (isShow) {
-                    macAddressInput.type = 'text';
-                    ddnsHostInput.type = 'text';
-                    portNumberInput.type = 'number';
+                    if (editingRawData) {
+                        macAddressInput.value = editingRawData.mac;
+                        ddnsHostInput.value = editingRawData.ddns;
+                        portNumberInput.value = editingRawData.port;
+                    }
                 } else {
-                    macAddressInput.type = 'password';
-                    ddnsHostInput.type = 'password';
-                    portNumberInput.type = 'password';
+                    if (editingRawData) {
+                        macAddressInput.value = "••••••••••••";
+                        ddnsHostInput.value = "••••••••••••";
+                        portNumberInput.value = "••••";
+                    }
                 }
-
-                macAddressInput.value = currentMac;
-                ddnsHostInput.value = currentDdns;
-                portNumberInput.value = currentPort;
             }
 
             if (showRawDetailsCheckbox) {
@@ -1426,14 +1422,22 @@ const htmlContent = `<!DOCTYPE html>
                 e.preventDefault();
 
                 const name = deviceNameInput.value.trim();
-                const rawMac = macAddressInput.value.trim();
-                const ddns = ddnsHostInput.value.trim();
-                const port = parseInt(portNumberInput.value.trim(), 10) || 9;
+                let rawMac = macAddressInput.value.trim();
+                let ddns = ddnsHostInput.value.trim();
+                let portStr = portNumberInput.value.trim();
                 const editIndex = editIndexInput.value;
+
+                if (editingRawData && rawMac.includes('•')) {
+                    rawMac = editingRawData.mac;
+                }
+                if (editingRawData && ddns.includes('•')) {
+                    ddns = editingRawData.ddns;
+                }
+                let port = (editingRawData && portStr.includes('•')) ? editingRawData.port : (parseInt(portStr, 10) || 9);
 
                 const formattedMac = parseAndFormatMac(rawMac);
                 if (!formattedMac) {
-                    showToast('無効なMACアドレス', true);
+                    showToast('無効なMACアドレスの形式です。', true);
                     return;
                 }
 
@@ -1453,6 +1457,7 @@ const htmlContent = `<!DOCTYPE html>
                 deviceForm.reset();
                 portNumberInput.value = "9";
                 if (showRawDetailsCheckbox) showRawDetailsCheckbox.checked = false;
+                editingRawData = null;
                 toggleInputMasking();
             });
 
@@ -1461,7 +1466,7 @@ const htmlContent = `<!DOCTYPE html>
                 deviceForm.reset();
                 portNumberInput.value = "9";
                 if (showRawDetailsCheckbox) showRawDetailsCheckbox.checked = false;
-                toggleInputMasking();
+                editingRawData = null;
             });
 
             function loadDevices() {
@@ -1546,10 +1551,6 @@ const htmlContent = `<!DOCTYPE html>
                             '<div class="device-title-row">' +
                                 '<span class="device-title">' + escapeHtml(device.name) + '</span>' +
                             '</div>' +
-                            '<div class="device-details" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; display: flex; flex-direction: column; gap: 0.15rem;">' +
-                                '<span><strong style="color: var(--primary);">MAC:</strong> ●●:●●:●●:●●:●●:●●</span>' +
-                                '<span><strong style="color: var(--accent);">HOST:</strong> ●●●●●●●● (保護中)</span>' +
-                            '</div>' +
                         '</div>' +
                         '<div class="device-actions">' +
                             '<button class="btn-action btn-wake" data-index="' + index + '" title="起動パケット送信"><i data-lucide="power"></i></button>' +
@@ -1608,15 +1609,19 @@ const htmlContent = `<!DOCTYPE html>
                 const device = devices[index];
                 deviceNameInput.value = device.name;
                 
-                if (encryptDeviceCheckbox) {
-                    encryptDeviceCheckbox.checked = !!device.isEncrypted;
-                }
-                toggleInputMasking();
+                editingRawData = {
+                    mac: device.mac,
+                    ddns: device.ddns,
+                    port: device.port
+                };
 
-                macAddressInput.value = device.mac;
-                ddnsHostInput.value = device.ddns;
-                portNumberInput.value = device.port;
-                autoWakeCheckbox.checked = device.autoWake || false;
+                if (showRawDetailsCheckbox) {
+                    showRawDetailsCheckbox.checked = false;
+                }
+
+                macAddressInput.value = "••••••••••••";
+                ddnsHostInput.value = "••••••••••••";
+                portNumberInput.value = "••••";
 
                 editIndexInput.value = index;
 
@@ -1629,14 +1634,17 @@ const htmlContent = `<!DOCTYPE html>
             }
 
             function exitEditMode() {
+                editingRawData = null;
                 editIndexInput.value = "";
                 saveBtn.querySelector('span').textContent = '保存する';
                 saveBtn.querySelector('i').setAttribute('data-lucide', 'save');
                 cancelEditBtn.classList.add('hidden');
-                if (encryptDeviceCheckbox) {
-                    encryptDeviceCheckbox.checked = false;
+                if (showRawDetailsCheckbox) {
+                    showRawDetailsCheckbox.checked = false;
                 }
-                toggleInputMasking();
+                macAddressInput.value = "";
+                ddnsHostInput.value = "";
+                portNumberInput.value = "9";
                 lucide.createIcons();
             }
 
