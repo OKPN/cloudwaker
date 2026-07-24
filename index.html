@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ブラウザから手軽に、美しく、リモートでPCを起動。静的サイトから直接自宅のPCへWake on LANパケットを中継送信するモダンなWebユーティリティ。">
+    <title>EtherWake - Web-based Wake on LAN</title>
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-glow-1"></div>
+    <div class="background-glow-2"></div>
+
+    <div class="app-container">
+        <!-- ヘッダー -->
+        <header class="app-header">
+            <div class="logo">
+                <i data-lucide="zap" class="logo-icon"></i>
+                <h1>EtherWake</h1>
+            </div>
+            <p class="subtitle">Cloud-triggered Wake on LAN client</p>
+        </header>
+
+        <!-- メイングリッド -->
+        <main class="app-main">
+            <!-- デバイス追加フォーム -->
+            <section class="card form-card">
+                <div class="card-header">
+                    <i data-lucide="plus-circle" class="header-icon"></i>
+                    <h2>デバイス登録</h2>
+                </div>
+                <form id="device-form" class="device-form">
+                    <input type="hidden" id="edit-index" value="">
+                    
+                    <div class="form-group">
+                        <label for="device-name">デバイス名</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="laptop" class="input-icon"></i>
+                            <input type="text" id="device-name" placeholder="例: 自宅のデスクトップPC" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mac-address">MACアドレス</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="cpu" class="input-icon"></i>
+                            <input type="text" id="mac-address" placeholder="XX:XX:XX:XX:XX:XX" required 
+                                   pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^([0-9A-Fa-f]{12})$">
+                        </div>
+                        <span class="help-text">16進数12桁（コロンかハイフン区切り、または区切りなし）</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ddns-host">DDNS / IPアドレス</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="globe" class="input-icon"></i>
+                            <input type="text" id="ddns-host" placeholder="your-domain.ddns.net または IP" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="port-number">ポート番号</label>
+                        <div class="input-wrapper">
+                            <i data-lucide="hash" class="input-icon"></i>
+                            <input type="number" id="port-number" value="9" min="1" max="65535" required>
+                        </div>
+                        <span class="help-text">通常は 9 または 7 です。</span>
+                    </div>
+
+                    <button type="submit" id="save-btn" class="btn btn-primary">
+                        <i data-lucide="save"></i>
+                        <span>保存する</span>
+                    </button>
+                    <button type="button" id="cancel-edit-btn" class="btn btn-secondary hidden">
+                        <span>キャンセル</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- デバイス一覧 -->
+            <section class="card list-card">
+                <div class="card-header">
+                    <i data-lucide="list" class="header-icon"></i>
+                    <h2>登録済みデバイス</h2>
+                </div>
+                <div id="device-list" class="device-list">
+                    <!-- JavaScriptでデバイスカードを挿入 -->
+                    <div class="empty-state">
+                        <i data-lucide="server-off" class="empty-icon"></i>
+                        <p>登録されたデバイスがありません。左のフォームから追加してください。</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- フッター -->
+        <footer class="app-footer">
+            <p>&copy; 2026 EtherWake. Power-controlled via Depicus WoL Engine.</p>
+            <p class="warning-text">※ 外部から起動するには、自宅ルーターの静的ARP/ポートフォワーディング設定が必要です。</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript の読み込み -->
+    <script src="app.js"></script>
+</body>
+</html>
