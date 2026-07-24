@@ -1595,20 +1595,33 @@ const htmlContent = `<!DOCTYPE html>
                     devices.forEach(d => d.autoWake = false);
                 }
 
-                let targetIndex = devices.findIndex(d => d.mac === deviceData.mac && d.ddns === deviceData.ddns);
+                let finalDevice = { ...deviceData };
+
+                if (finalDevice.isEncrypted) {
+                    try {
+                        finalDevice.mac = CryptoJS.AES.encrypt(finalDevice.mac, LOCAL_PRIVATE_KEY).toString();
+                        finalDevice.ddns = CryptoJS.AES.encrypt(finalDevice.ddns, LOCAL_PRIVATE_KEY).toString();
+                        finalDevice.port = CryptoJS.AES.encrypt(finalDevice.port.toString(), LOCAL_PRIVATE_KEY).toString();
+                        finalDevice.isEncrypted = true;
+                    } catch (err) {
+                        console.error('Failed to encrypt imported device', err);
+                    }
+                }
+
+                let targetIndex = devices.findIndex(d => d.mac === finalDevice.mac && d.ddns === finalDevice.ddns);
                 if (targetIndex === -1) {
-                    devices.push(deviceData);
+                    devices.push(finalDevice);
                     saveDevices();
                     renderDevices();
                 } else {
-                    devices[targetIndex] = deviceData;
+                    devices[targetIndex] = finalDevice;
                     saveDevices();
                     renderDevices();
                 }
 
-                if (deviceData.autoWake) {
+                if (finalDevice.autoWake) {
                     setTimeout(() => {
-                        wakeDevice(deviceData);
+                        wakeDevice(finalDevice);
                     }, 600);
                 }
             }
@@ -1832,7 +1845,7 @@ const htmlContent = `<!DOCTYPE html>
                         tempDevice.ddns = ddnsBytes.toString(CryptoJS.enc.Utf8);
                         const portBytes = CryptoJS.AES.decrypt(device.port.toString(), LOCAL_PRIVATE_KEY);
                         tempDevice.port = parseInt(portBytes.toString(CryptoJS.enc.Utf8), 10);
-                        delete tempDevice.isEncrypted;
+                        tempDevice.isEncrypted = true;
                     } catch (e) {
                         showToast('暗号化されたデータの復号に失敗したため共有できません。', true);
                         return;
