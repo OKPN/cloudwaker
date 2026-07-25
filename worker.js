@@ -1377,13 +1377,16 @@ const htmlContent = `<!DOCTYPE html>
 
             function switchToNewDeviceMode() {
                 exitEditMode();
-                deviceForm.reset();
+                deviceNameInput.value = "";
+                macAddressInput.value = "";
+                ddnsHostInput.value = "";
                 portNumberInput.value = "9";
                 if (showRawDetailsCheckbox) showRawDetailsCheckbox.checked = false;
-                editingRawData = null;
                 showToast('新規登録フォームを開きました。');
                 document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
-                deviceNameInput.focus();
+                setTimeout(() => {
+                    deviceNameInput.focus();
+                }, 100);
             }
 
             if (addNewDeviceBtn) addNewDeviceBtn.addEventListener('click', switchToNewDeviceMode);
@@ -1722,15 +1725,16 @@ const htmlContent = `<!DOCTYPE html>
             function exitEditMode() {
                 editingRawData = null;
                 editIndexInput.value = "";
+                deviceNameInput.value = "";
+                macAddressInput.value = "";
+                ddnsHostInput.value = "";
+                portNumberInput.value = "9";
                 saveBtn.querySelector('span').textContent = '保存する';
                 saveBtn.querySelector('i').setAttribute('data-lucide', 'save');
                 cancelEditBtn.classList.add('hidden');
                 if (showRawDetailsCheckbox) {
                     showRawDetailsCheckbox.checked = false;
                 }
-                macAddressInput.value = "";
-                ddnsHostInput.value = "";
-                portNumberInput.value = "9";
                 lucide.createIcons();
             }
 
