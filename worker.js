@@ -1395,6 +1395,41 @@ const htmlContent = `<!DOCTYPE html>
                 processUnlock();
             });
 
+            const copyPromptBtn = document.getElementById('copy-prompt-btn');
+            const promptText = document.getElementById('prompt-text');
+
+            if (copyPromptBtn && promptText) {
+                copyPromptBtn.addEventListener('click', () => {
+                    const text = promptText.innerText || promptText.textContent;
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            showToast('プロンプトテンプレートをコピーしました！');
+                        }).catch(() => {
+                            fallbackCopyText(text);
+                        });
+                    } else {
+                        fallbackCopyText(text);
+                    }
+                });
+            }
+
+            function fallbackCopyText(text) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('プロンプトテンプレートをコピーしました！');
+                } catch (err) {
+                    showToast('コピーに失敗しました。', true);
+                }
+                document.body.removeChild(textarea);
+            }
+
             function toggleInputMasking() {
                 const isShow = showRawDetailsCheckbox ? showRawDetailsCheckbox.checked : false;
                 if (isShow) {
