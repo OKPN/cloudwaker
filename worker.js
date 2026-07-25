@@ -1477,12 +1477,18 @@ const htmlContent = `<!DOCTYPE html>
                 const deviceData = { name, mac: formattedMac, ddns, port };
 
                 if (editIndex !== "") {
-                    devices[parseInt(editIndex, 10)] = deviceData;
-                    showToast('更新しました。');
+                    const originalDevice = devices[parseInt(editIndex, 10)];
+                    if (originalDevice && originalDevice.name === name) {
+                        devices[parseInt(editIndex, 10)] = deviceData;
+                        showToast('デバイス情報を更新しました。');
+                    } else {
+                        devices.push(deviceData);
+                        showToast('「' + name + '」を新しいデバイスとして追加登録しました！');
+                    }
                     exitEditMode();
                 } else {
                     devices.push(deviceData);
-                    showToast('追加しました。');
+                    showToast('新しいデバイスを登録しました。');
                 }
 
                 saveDevices();
