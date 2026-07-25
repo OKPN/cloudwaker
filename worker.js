@@ -1066,7 +1066,6 @@ const htmlContent = `<!DOCTYPE html>
                             <i data-lucide="hash" class="input-icon"></i>
                             <input type="text" id="port-number" value="9" required>
                         </div>
-                        <span class="help-text">通常は 9 または 7 です。</span>
                     </div>
 
                     <div class="form-group-checkbox">
@@ -1169,7 +1168,7 @@ const htmlContent = `<!DOCTYPE html>
 3. 自宅PCのローカルIPアドレスの固定 (ルーターのDHCP固定割当/MAC予約機能を使用)
 4. 無料DDNSサービスの利用 (f5.si やルーター付属DDNS)
 5. ルーターでの「静的ARP」設定 (IPとMACの組み合わせ記憶)
-6. ルーターでの「ポートフォワーディング」設定
+6. ルーターでの「ポートフォワーディング」設定 (セキュリティのためにカスタムポートを利用する方法含む)
 
 私のルーターの型番は「【ここにルーターの型番を入力 例: WSR-3200AX4S / WRC-X3000GS など】」で、PCのOSは「【Windows 11 / 10 など】」、PC/マザーボード型番は「【型番/メーカー名など】」です。
 
@@ -1200,7 +1199,7 @@ const htmlContent = `<!DOCTYPE html>
         <section class="faq-card">
             <div class="faq-header">
                 <i data-lucide="help-circle" class="header-icon"></i>
-                <h3>❓ よくある質問（Q & A）</h3>
+                <h3>❓ Q & A</h3>
             </div>
             <div class="faq-list">
                 <div class="faq-item">
@@ -1221,7 +1220,7 @@ const htmlContent = `<!DOCTYPE html>
                     </div>
                     <div class="faq-answer">
                         <strong>A. はい、問題なく使えます。</strong><br>
-                        スマホのホーム画面に自動起動用URLのショートカット（Webアイコン）を配置しておけば、アプリのように「タップするだけで自宅PCを即座に遠隔起動」することができます。また、Telegram等の通知メッセージ内にリンクを貼っておけば、通知から直接一発起動させることも可能です。
+                        スマホのホーム画面に自動起動用URLのショートカット（Webアイコン）を配置しておけば、アプリのように「タップするだけで自宅PCを即座に遠隔起動」することができます。
                     </div>
                 </div>
 
