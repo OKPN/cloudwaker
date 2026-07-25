@@ -1447,6 +1447,24 @@ const htmlContent = `<!DOCTYPE html>
                 }
             }
 
+            function checkNameChangeUI() {
+                const editIndex = editIndexInput.value;
+                if (editIndex !== "") {
+                    const originalDevice = devices[parseInt(editIndex, 10)];
+                    const currentName = deviceNameInput.value.trim();
+                    if (originalDevice && originalDevice.name !== currentName) {
+                        saveBtn.querySelector('span').textContent = '保存する';
+                        saveBtn.querySelector('i').setAttribute('data-lucide', 'save');
+                    } else {
+                        saveBtn.querySelector('span').textContent = '更新する';
+                        saveBtn.querySelector('i').setAttribute('data-lucide', 'check');
+                    }
+                    lucide.createIcons();
+                }
+            }
+
+            deviceNameInput.addEventListener('input', checkNameChangeUI);
+
             if (showRawDetailsCheckbox) {
                 showRawDetailsCheckbox.addEventListener('change', toggleInputMasking);
             }
