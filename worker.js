@@ -1098,10 +1098,16 @@ const htmlContent = `<!DOCTYPE html>
                         <i data-lucide="list" class="header-icon"></i>
                         <h2>登録済みデバイス</h2>
                     </div>
-                    <button id="batch-share-btn" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem;">
-                        <i data-lucide="share-2" style="width: 14px; height: 14px;"></i>
-                        <span>選択共有</span>
-                    </button>
+                    <div style="display: flex; gap: 0.4rem; align-items: center;">
+                        <button id="add-new-device-btn" class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem;">
+                            <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                            <span>新規追加</span>
+                        </button>
+                        <button id="batch-share-btn" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem;">
+                            <i data-lucide="share-2" style="width: 14px; height: 14px;"></i>
+                            <span>選択共有</span>
+                        </button>
+                    </div>
                 </div>
                 <div id="device-list" class="device-list">
                     <!-- JavaScriptでデバイスカードを挿入 -->
@@ -1109,6 +1115,12 @@ const htmlContent = `<!DOCTYPE html>
                         <i data-lucide="server-off" class="empty-icon"></i>
                         <p>登録されたデバイスがありません。左のフォームから追加してください。</p>
                     </div>
+                </div>
+                <div style="margin-top: 1rem; text-align: center;">
+                    <button id="add-new-device-bottom-btn" class="btn btn-secondary" style="width: 100%; padding: 0.6rem; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; border-style: dashed; background: rgba(255,255,255,0.02);">
+                        <i data-lucide="plus-circle" style="width: 16px; height: 16px; color: var(--primary);"></i>
+                        <span>＋ 新しいデバイスを登録する</span>
+                    </button>
                 </div>
             </section>
         </main>
@@ -1359,6 +1371,23 @@ const htmlContent = `<!DOCTYPE html>
             renderDevices();
             toggleInputMasking();
             lucide.createIcons();
+
+            const addNewDeviceBtn = document.getElementById('add-new-device-btn');
+            const addNewDeviceBottomBtn = document.getElementById('add-new-device-bottom-btn');
+
+            function switchToNewDeviceMode() {
+                exitEditMode();
+                deviceForm.reset();
+                portNumberInput.value = "9";
+                if (showRawDetailsCheckbox) showRawDetailsCheckbox.checked = false;
+                editingRawData = null;
+                showToast('新規登録フォームを開きました。');
+                document.querySelector('.form-card').scrollIntoView({ behavior: 'smooth' });
+                deviceNameInput.focus();
+            }
+
+            if (addNewDeviceBtn) addNewDeviceBtn.addEventListener('click', switchToNewDeviceMode);
+            if (addNewDeviceBottomBtn) addNewDeviceBottomBtn.addEventListener('click', switchToNewDeviceMode);
 
             if (batchShareBtn) {
                 batchShareBtn.addEventListener('click', () => {
