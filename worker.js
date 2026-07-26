@@ -1316,7 +1316,7 @@ const htmlContent = `<!DOCTYPE html>
                 <div style="margin: 0.5rem 0;">
                     <label class="checkbox-label" style="font-size: 0.85rem;">
                         <input type="checkbox" id="share-autowake-checkbox">
-                        <span>インポート時に自動起動する</span>
+                        <span>リンクをクリック時に自動起動する</span>
                     </label>
                 </div>
                 <div class="qrcode-container">
@@ -1337,7 +1337,7 @@ const htmlContent = `<!DOCTYPE html>
                     <ul style="padding-left: 1.1rem; margin: 0; display: flex; flex-direction: column; gap: 0.35rem;">
                         <li>共有URLには暗号化された端末情報が含まれます。セキュリティ保護のため、むやみに他人に共有しないでください。</li>
                         <li>やむを得ず第三者に共有する場合は、必ず事前に<strong>手動ロックPIN（最大6桁）</strong>を設定してください。</li>
-                        <li>PC電源管理アプリ <a href="https://github.com/OKPN/dual-sleeper" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 600; text-decoration: underline;">Dual Sleeper (GitHub)</a> と連携するときは、ここでコピーしたURLを用いてください。</li>
+                        <li>PC電源管理アプリ <a href="https://github.com/OKPN/dual-sleeper" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 600; text-decoration: underline;">Dual Sleeper (GitHub)</a> と連携するときは、「リンクをクリック時に自動起動」をオンにしたうえでコピーしたURLを用いてください。</li>
                     </ul>
                 </div>
             </div>
