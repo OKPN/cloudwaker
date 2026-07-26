@@ -1563,6 +1563,11 @@ const htmlContent = `<!DOCTYPE html>
 
             function saveDevices() {
                 localStorage.setItem('cloudwaker_devices', JSON.stringify(devices));
+                try {
+                    if (window.location.search.includes('data=')) {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                } catch(e) {}
             }
 
             function checkImport() {
