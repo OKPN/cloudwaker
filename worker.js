@@ -1509,7 +1509,7 @@ const htmlContent = `<!DOCTYPE html>
                 let rawMac = macAddressInput.value.trim();
                 let ddns = ddnsHostInput.value.trim();
                 let portStr = portNumberInput.value.trim();
-                const editIndex = editIndexInput.value;
+                const rawEditIndex = editIndexInput.value.trim();
 
                 if (editingRawData && rawMac.includes('•')) {
                     rawMac = editingRawData.mac;
@@ -1527,16 +1527,30 @@ const htmlContent = `<!DOCTYPE html>
 
                 const deviceData = { name, mac: formattedMac, ddns, port };
 
-                if (editIndex !== "") {
-                    const idx = parseInt(editIndex, 10);
-                    if (idx >= 0 && idx < devices.length) {
-                        devices[idx] = deviceData;
-                        showToast('「' + name + '」の端末情報を更新しました！');
-                    }
+                let targetIndex = -1;
+
+                if (rawEditIndex !== "" && !isNaN(parseInt(rawEditIndex, 10))) {
+                    targetIndex = parseInt(rawEditIndex, 10);
+                } else if (editingRawData) {
+                    // editingRawDataと一致する既存デバイスを特定
+                    targetIndex = devices.findIndex(d => d.mac === editingRawData.mac && d.ddns === editingRawData.ddns);
+                }
+
+                if (targetIndex >= 0 && targetIndex < devices.length) {
+                    // 確実に指定インデックスの端末データ（名前を含む全項目）を上書き更新
+                    devices[targetIndex] = deviceData;
+                    showToast('「' + name + '」の端末情報を更新しました！');
                     exitEditMode();
                 } else {
-                    devices.push(deviceData);
-                    showToast('新しいデバイスを登録しました。');
+                    // 同名または同MAC+DDNSの端末があれば更新、無ければ新規追加
+                    const matchIdx = devices.findIndex(d => d.name === name || (d.mac === formattedMac && d.ddns === ddns));
+                    if (matchIdx !== -1) {
+                        devices[matchIdx] = deviceData;
+                        showToast('「' + name + '」の端末情報を更新しました！');
+                    } else {
+                        devices.push(deviceData);
+                        showToast('「' + name + '」を新規デバイスとして登録しました。');
+                    }
                 }
 
                 saveDevices();
