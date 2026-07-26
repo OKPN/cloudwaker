@@ -1498,24 +1498,6 @@ const htmlContent = `<!DOCTYPE html>
                 }
             }
 
-            function checkNameChangeUI() {
-                const editIndex = editIndexInput.value;
-                if (editIndex !== "") {
-                    const originalDevice = devices[parseInt(editIndex, 10)];
-                    const currentName = deviceNameInput.value.trim();
-                    if (originalDevice && originalDevice.name !== currentName) {
-                        saveBtn.querySelector('span').textContent = '保存する';
-                        saveBtn.querySelector('i').setAttribute('data-lucide', 'save');
-                    } else {
-                        saveBtn.querySelector('span').textContent = '更新する';
-                        saveBtn.querySelector('i').setAttribute('data-lucide', 'check');
-                    }
-                    lucide.createIcons();
-                }
-            }
-
-            deviceNameInput.addEventListener('input', checkNameChangeUI);
-
             if (showRawDetailsCheckbox) {
                 showRawDetailsCheckbox.addEventListener('change', toggleInputMasking);
             }
@@ -1546,13 +1528,10 @@ const htmlContent = `<!DOCTYPE html>
                 const deviceData = { name, mac: formattedMac, ddns, port };
 
                 if (editIndex !== "") {
-                    const originalDevice = devices[parseInt(editIndex, 10)];
-                    if (originalDevice && originalDevice.name === name) {
-                        devices[parseInt(editIndex, 10)] = deviceData;
-                        showToast('デバイス情報を更新しました。');
-                    } else {
-                        devices.push(deviceData);
-                        showToast('「' + name + '」を新しいデバイスとして追加登録しました！');
+                    const idx = parseInt(editIndex, 10);
+                    if (idx >= 0 && idx < devices.length) {
+                        devices[idx] = deviceData;
+                        showToast('「' + name + '」の端末情報を更新しました！');
                     }
                     exitEditMode();
                 } else {
