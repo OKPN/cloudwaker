@@ -1329,6 +1329,17 @@ const htmlContent = `<!DOCTYPE html>
                         <span>コピー</span>
                     </button>
                 </div>
+                <div class="share-notice-box" style="margin-top: 1.25rem; padding: 0.75rem 0.9rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.82rem; color: var(--text-secondary); text-align: left; line-height: 1.5;">
+                    <div style="font-weight: 600; color: #fbbf24; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.35rem;">
+                        <i data-lucide="shield-alert" style="width: 15px; height: 15px; color: #fbbf24;"></i>
+                        <span>共有時の注意事項 ＆ アプリ連携</span>
+                    </div>
+                    <ul style="padding-left: 1.1rem; margin: 0; display: flex; flex-direction: column; gap: 0.35rem;">
+                        <li>共有URLには暗号化された端末情報が含まれます。セキュリティ保護のため、むやみに他人に共有しないでください。</li>
+                        <li>やむを得ず第三者に共有する場合は、必ず事前に<strong>手動ロックPIN（最大6桁）</strong>を設定してください。</li>
+                        <li>PC電源管理アプリ <a href="https://github.com/OKPN/dual-sleeper" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 600; text-decoration: underline;">Dual Sleeper (GitHub)</a> と連携するときは、ここでコピーしたURLを用いてください。</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
