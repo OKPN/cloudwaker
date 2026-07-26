@@ -1347,6 +1347,7 @@ const htmlContent = `<!DOCTYPE html>
             <div class="modal-header">
                 <i data-lucide="lock" class="header-icon"></i>
                 <h2>保護された共有リンク</h2>
+                <button id="close-pin-modal-btn" class="btn-close">&times;</button>
             </div>
             <div class="modal-body" style="text-align: center;">
                 <p class="modal-desc">この設定は手動PINで保護されています。送信者が設定したPINコードを入力してください。</p>
@@ -1449,6 +1450,19 @@ const htmlContent = `<!DOCTYPE html>
                     showToast('コピー失敗', true);
                 }
             });
+
+            const closePinModalBtn = document.getElementById('close-pin-modal-btn');
+            if (closePinModalBtn) closePinModalBtn.addEventListener('click', closePinModal);
+            if (pinModal) {
+                pinModal.addEventListener('click', (e) => {
+                    if (e.target === pinModal) closePinModal();
+                });
+            }
+            if (unlockPinInput) {
+                unlockPinInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') processUnlock();
+                });
+            }
 
             unlockBtn.addEventListener('click', () => {
                 processUnlock();
@@ -1609,6 +1623,22 @@ const htmlContent = `<!DOCTYPE html>
                 } catch(e) {}
             }
 
+            function openPinModal() {
+                unlockPinInput.value = '';
+                pinModal.classList.remove('hidden');
+                setTimeout(() => {
+                    pinModal.classList.add('show');
+                    unlockPinInput.focus();
+                }, 10);
+            }
+
+            function closePinModal() {
+                pinModal.classList.remove('show');
+                setTimeout(() => {
+                    pinModal.classList.add('hidden');
+                }, 300);
+            }
+
             function checkImport() {
                 const params = new URLSearchParams(window.location.search);
                 const encryptedData = params.get('data');
@@ -1633,16 +1663,19 @@ const htmlContent = `<!DOCTYPE html>
 
             function processUnlock() {
                 const pin = unlockPinInput.value.trim();
-                if (!pin) return;
+                if (!pin) {
+                    showToast('PINコードを入力してください。', true);
+                    return;
+                }
                 try {
                     const bytes = CryptoJS.AES.decrypt(pendingEncryptedData, pin);
                     const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
-                    if (!decryptedText) { showToast('PIN間違い', true); return; }
+                    if (!decryptedText) { showToast('PINコードが正しくありません。', true); return; }
                     importPayload(JSON.parse(decryptedText));
                     closePinModal();
                     pendingEncryptedData = null;
                     window.history.replaceState({}, document.title, window.location.pathname);
-                } catch (e) { showToast('PIN間違い', true); }
+                } catch (e) { showToast('PINコードが正しくありません。', true); }
             }
 
             function importPayload(payload) {
