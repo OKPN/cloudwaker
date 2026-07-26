@@ -1281,9 +1281,9 @@ const htmlContent = `<!DOCTYPE html>
                         <span>本サイトやDepicusが障害等で起動しない場合、他の代替手段はありますか？</span>
                     </div>
                     <div class="faq-answer">
-                        <strong>A. 外部のバックアップWoL送信サイトから手動で起動リクエストを送信できます。</strong><br>
-                        万が一Depicus側の障害やタイムアウトで本サイトから起動できない場合は、以下の実在する外部WoL中継ツールサイトへアクセスし、MACアドレス・IP（DDNS）・ポート番号を手動入力して送信をお試しください。<br>
-                        ・<a href="https://wake-on-lan.samuraj-cz.com/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">SAMURAJ-cz Wake On LAN ツール（外部サイト）</a>
+                        <strong>A. 外部のバックアップWoLサイトのご利用や、自前でのWoL送信手段のご用意をおすすめします。</strong><br>
+                        万が一Depicus側の障害等で本サイトから起動できない場合は、外部中継ツールサイト（例: <a href="https://wake-on-lan.samuraj-cz.com/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">SAMURAJ-cz Wake On LAN ツール</a>）から手動送信をお試しください。<br><br>
+                        なお、外部サービスの障害やダウンに一切左右されない永久的に安定した遠隔起動環境を求める場合は、無料クラウド（Koyeb, Render等）や自宅サーバー/Raspberry Piなどを利用して、<strong>自分専用のWoL送信手段（自前API/中継サーバー）を用意しておくことを強くおすすめします。</strong>
                     </div>
                 </div>
             </div>
