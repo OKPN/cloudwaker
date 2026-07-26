@@ -1292,7 +1292,10 @@ const htmlContent = `<!DOCTYPE html>
         <!-- フッター -->
         <footer class="app-footer">
             <p>&copy; 2026 CloudWaker. Power-controlled via Depicus WoL Engine.</p>
-            <p style="margin-top: 0.5rem;"><a href="https://github.com/OKPN/cloudwaker" target="_blank" rel="noopener noreferrer" style="color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; transition: color 0.2s ease;"><i data-lucide="github" style="width: 14px; height: 14px;"></i> GitHub Repository</a></p>
+            <p style="margin-top: 0.5rem; font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; opacity: 0.85; max-width: 680px; margin-left: auto; margin-right: auto;">
+                【免責事項】本サイトの利用および起動パケット送信によって生じたいかなる直接的・間接的な損害、トラブル、接続障害等について、本サービスおよび開発者は一切の責任を負いません。あらかじめご了承のうえ、ご自身の責任においてご利用ください。
+            </p>
+            <p style="margin-top: 0.6rem;"><a href="https://github.com/OKPN/cloudwaker" target="_blank" rel="noopener noreferrer" style="color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; transition: color 0.2s ease;"><i data-lucide="github" style="width: 14px; height: 14px;"></i> GitHub Repository</a></p>
         </footer>
     </div>
 
