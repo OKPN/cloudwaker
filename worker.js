@@ -1738,47 +1738,31 @@ const htmlContent = `<!DOCTYPE html>
                 const depicusMac = targetMac.replace(/:/g, '-');
                 const depicusUrl = 'https://www.depicus.com/wake-on-lan/woli?m=' + encodeURIComponent(depicusMac) + '&i=' + encodeURIComponent(targetDdns) + '&s=255.255.255.255&p=' + targetPort;
                 
-                showToast('「' + device.name + '」へWoLパケットを送信します...');
+                showToast('「' + device.name + '」へ起動パケットを送信します...');
 
-                // GET送信用の非表示iframe
-                const iframeName = 'depicus_frame_' + Date.now();
-                const iframe = document.createElement('iframe');
-                iframe.name = iframeName;
-                iframe.style.display = 'none';
-                iframe.src = depicusUrl;
-                document.body.appendChild(iframe);
+                // 1. Cloudflare Workers サーバーサイド代理送信 (iframe/CORS遮断を100%回避)
+                const workerApiUrl = '/api/wake?m=' + encodeURIComponent(targetMac) + '&i=' + encodeURIComponent(targetDdns) + '&p=' + targetPort;
+                fetch(workerApiUrl)
+                    .then(res => res.json())
+                    .then(data => {
+                        console.log('Worker wake proxy result:', data);
+                    })
+                    .catch(err => console.error('Worker wake proxy error:', err));
 
-                // POST送信用の非表示フォーム（補強）
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = 'https://www.depicus.com/wake-on-lan/woli-ajax.php';
-                form.target = iframeName;
-                form.style.display = 'none';
+                // 2. ブラウザ直通 fetch (no-cors)
+                try {
+                    fetch(depicusUrl, { mode: 'no-cors', cache: 'no-cache' });
+                } catch(e) {}
 
-                const postParams = {
-                    mac: depicusMac,
-                    ip: targetDdns,
-                    subnet: '255.255.255.255',
-                    port: targetPort,
-                    secureon: ''
-                };
-
-                for (const key in postParams) {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = key;
-                    input.value = postParams[key];
-                    form.appendChild(input);
-                }
-
-                document.body.appendChild(form);
-                try { form.submit(); } catch(e) {}
+                // 3. バックグラウンド Image ビーコン送信
+                try {
+                    const img = new Image();
+                    img.src = depicusUrl + '&_t=' + Date.now();
+                } catch(e) {}
 
                 setTimeout(() => {
-                    if (document.body.contains(iframe)) iframe.remove();
-                    if (document.body.contains(form)) form.remove();
-                    showToast('「' + device.name + '」へパケットを送信しました！');
-                }, 1500);
+                    showToast('「' + device.name + '」へ起動パケットを送信しました！');
+                }, 1000);
             }
 
             function openShareModal(targetIndex = null) {
@@ -1939,6 +1923,46 @@ const htmlContent = `<!DOCTYPE html>
 
 export default {
     async fetch(request, env, ctx) {
+        const url = new URL(request.url);
+
+        // Cloudflare Workers サーバーサイド代理送信 API
+        if (url.pathname === '/api/wake') {
+            const mac = url.searchParams.get('m') || '';
+            const ip = url.searchParams.get('i') || '';
+            const port = url.searchParams.get('p') || '9';
+
+            if (!mac || !ip) {
+                return new Response(JSON.stringify({ error: 'Missing parameters' }), {
+                    status: 400,
+                    headers: { 'content-type': 'application/json;charset=UTF-8', 'access-control-allow-origin': '*' }
+                });
+            }
+
+            const depicusMac = mac.replace(/:/g, '-');
+            const depicusUrl = `https://www.depicus.com/wake-on-lan/woli?m=${encodeURIComponent(depicusMac)}&i=${encodeURIComponent(ip)}&s=255.255.255.255&p=${encodeURIComponent(port)}`;
+
+            try {
+                // Cloudflare サーバーから Depicus へ直接 GET リクエスト（ブラウザのCORS/X-Frame-Options等の遮断を100%回避）
+                const depicusRes = await fetch(depicusUrl, {
+                    method: 'GET',
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+                    }
+                });
+
+                return new Response(JSON.stringify({ success: true, status: depicusRes.status }), {
+                    status: 200,
+                    headers: { 'content-type': 'application/json;charset=UTF-8', 'access-control-allow-origin': '*' }
+                });
+            } catch (err) {
+                return new Response(JSON.stringify({ error: err.message }), {
+                    status: 500,
+                    headers: { 'content-type': 'application/json;charset=UTF-8', 'access-control-allow-origin': '*' }
+                });
+            }
+        }
+
         return new Response(htmlContent, {
             headers: {
                 "content-type": "text/html;charset=UTF-8",
