@@ -1020,7 +1020,7 @@ const htmlContent = `<!DOCTYPE html>
         <section class="about-card">
             <div class="about-content">
                 <i data-lucide="shield-check" class="about-icon"></i>
-                <div class="about-text"><strong>🛡️ このサイトについて</strong>本サイトは、<strong>Cloudflare Workers 上に構築された完全サーバーレスの Wake on LAN (WoL) 操作パネル</strong>です。デバイスの起動リクエストは、実績豊富な外部WoL送信サービス（<a href="https://www.depicus.com" target="_blank" rel="noopener noreferrer">Depicus</a>）を<strong>プライマリ（メイン中継）</strong>とし、バックアップWoL REST APIを<strong>セカンダリ（予備中継）</strong>とする二重化自動フォールバックシステムで自宅へ送信されます。入力したデバイス情報や暗号化データは、すべてクライアント（ブラウザ）端末上と中継サービス間のみで処理され、サーバー側にはいかなるデータも保存・収集されません。</div>
+                <div class="about-text"><strong>🛡️ このサイトについて</strong>本サイトは、<strong>Cloudflare Workers 上に構築された完全サーバーレスの Wake on LAN (WoL) 操作パネル</strong>です。デバイスの起動リクエストは、Depicus（プライマリ）およびバックアップWoL API（セカンダリ）による二重化送信で自宅へ届きます。登録データはお使いのブラウザ内でのみ処理・保存され、サーバー側にデータが収集されることはありません。</div>
             </div>
         </section>
 
