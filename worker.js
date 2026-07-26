@@ -1755,7 +1755,7 @@ const htmlContent = `<!DOCTYPE html>
                 setTimeout(() => {
                     if (document.body.contains(iframe)) {
                         iframe.remove();
-                        showToast('「' + device.name + '」へパケットを送信しました（T/O）');
+                        showToast('タイムアウトにより「' + device.name + '」へパケットを送信できませんでした。', true);
                     }
                 }, 8000);
             }
