@@ -1647,29 +1647,31 @@ const htmlContent = `<!DOCTYPE html>
 
             function bindActionEvents() {
                 document.querySelectorAll('.btn-wake').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const index = parseInt(e.currentTarget.dataset.index, 10);
-                        wakeDevice(devices[index]);
+                    btn.addEventListener('click', () => {
+                        const index = parseInt(btn.dataset.index, 10);
+                        if (devices[index]) {
+                            wakeDevice(devices[index]);
+                        }
                     });
                 });
 
                 document.querySelectorAll('.btn-share').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const index = parseInt(e.currentTarget.dataset.index, 10);
+                    btn.addEventListener('click', () => {
+                        const index = parseInt(btn.dataset.index, 10);
                         openShareModal(index);
                     });
                 });
 
                 document.querySelectorAll('.btn-edit').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const index = parseInt(e.currentTarget.dataset.index, 10);
+                    btn.addEventListener('click', () => {
+                        const index = parseInt(btn.dataset.index, 10);
                         enterEditMode(index);
                     });
                 });
 
                 document.querySelectorAll('.btn-delete').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const index = parseInt(e.currentTarget.dataset.index, 10);
+                    btn.addEventListener('click', () => {
+                        const index = parseInt(btn.dataset.index, 10);
                         if (confirm('本当に「' + devices[index].name + '」を削除しますか？')) {
                             devices.splice(index, 1);
                             saveDevices();
@@ -1679,7 +1681,6 @@ const htmlContent = `<!DOCTYPE html>
                                 exitEditMode();
                                 deviceForm.reset();
                                 portNumberInput.value = "9";
-                                autoWakeCheckbox.checked = false;
                             }
                         }
                     });
@@ -1731,9 +1732,14 @@ const htmlContent = `<!DOCTYPE html>
             }
 
             function wakeDevice(device) {
+                if (!device || !device.mac || !device.ddns) {
+                    showToast('デバイス情報が正しくありません。', true);
+                    return;
+                }
+
                 const targetMac = device.mac;
                 const targetDdns = device.ddns;
-                const targetPort = device.port;
+                const targetPort = device.port || 9;
 
                 const depicusMac = targetMac.replace(/:/g, '-');
                 const depicusUrl = 'https://www.depicus.com/wake-on-lan/woli?m=' + encodeURIComponent(depicusMac) + '&i=' + encodeURIComponent(targetDdns) + '&s=255.255.255.255&p=' + targetPort;
@@ -1744,6 +1750,11 @@ const htmlContent = `<!DOCTYPE html>
                 iframe.style.display = 'none';
                 iframe.src = depicusUrl;
                 document.body.appendChild(iframe);
+
+                try {
+                    const img = new Image();
+                    img.src = depicusUrl + '&_t=' + Date.now();
+                } catch(e) {}
 
                 iframe.onload = () => {
                     setTimeout(() => {
