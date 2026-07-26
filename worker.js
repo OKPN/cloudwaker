@@ -1020,7 +1020,7 @@ const htmlContent = `<!DOCTYPE html>
         <section class="about-card">
             <div class="about-content">
                 <i data-lucide="shield-check" class="about-icon"></i>
-                <div class="about-text"><strong>🛡️ このサイトについて</strong>本サイトは、<strong>Cloudflare Workers 上に構築された完全サーバーレスの Wake on LAN (WoL) 操作パネル</strong>です。デバイスの起動リクエストは、Depicus（プライマリ）およびバックアップWoL API（セカンダリ）による二重化送信で自宅へ届きます。登録データはお使いのブラウザ内でのみ処理・保存され、サーバー側にデータが収集されることはありません。</div>
+                <div class="about-text"><strong>🛡️ このサイトについて</strong>本サイトは、<strong>Cloudflare Workers 上に構築された完全サーバーレスの Wake on LAN (WoL) 操作パネル</strong>です。デバイスの起動リクエストは、外部WoL送信サービス（<a href="https://www.depicus.com" target="_blank" rel="noopener noreferrer">Depicus</a>）を経由して自宅へ送信されます。入力したデバイス情報や暗号化データは、すべてクライアント（ブラウザ）端末上と中継サービス間のみで処理され、サーバー側にはいかなるデータも保存・収集されません。</div>
             </div>
         </section>
 
@@ -1266,11 +1266,12 @@ const htmlContent = `<!DOCTYPE html>
                 <div class="faq-item">
                     <div class="faq-question">
                         <span class="faq-question-badge">Q6</span>
-                        <span>中継サービスのDepicusがダウンしたり障害が起きた場合はどうなりますか？</span>
+                        <span>本サイトやDepicusが障害等で起動しない場合、他の代替手段はありますか？</span>
                     </div>
                     <div class="faq-answer">
-                        <strong>A. 自動フォールバック（予備API切替送信）機能により、問題なく遠隔起動できます。</strong><br>
-                        本サイトは「Depicus (プライマリ)」と「バックアップ WoL REST API (セカンダリ)」による二重化中継システムを採用しています。Depicusからの応答が3.5秒以上途絶えた場合（障害時など）、システムが自動的に無応答を検知し、セカンダリのバックアップWoL REST APIへ切替送信を行います。そのため、メイン中継がダウンしていても問題なく自宅PCを遠隔起動できます。
+                        <strong>A. 外部のバックアップWoL送信サイトから手動で起動リクエストを送信できます。</strong><br>
+                        万が一Depicus側の障害やタイムアウトで本サイトから起動できない場合は、以下の実在する外部WoL中継ツールサイトへアクセスし、MACアドレス・IP（DDNS）・ポート番号を手動入力して送信をお試しください。<br>
+                        ・<a href="https://wake-on-lan.samuraj-cz.com/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">SAMURAJ-cz Wake On LAN ツール（外部サイト）</a>
                     </div>
                 </div>
             </div>
@@ -1278,7 +1279,7 @@ const htmlContent = `<!DOCTYPE html>
 
         <!-- フッター -->
         <footer class="app-footer">
-            <p>&copy; 2026 CloudWaker. Power-controlled via Depicus Engine (Primary) & Backup WoL API (Secondary).</p>
+            <p>&copy; 2026 CloudWaker. Power-controlled via Depicus WoL Engine.</p>
             <p style="margin-top: 0.5rem;"><a href="https://github.com/OKPN/cloudwaker" target="_blank" rel="noopener noreferrer" style="color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; transition: color 0.2s ease;"><i data-lucide="github" style="width: 14px; height: 14px;"></i> GitHub Repository</a></p>
         </footer>
     </div>
@@ -1754,46 +1755,26 @@ const htmlContent = `<!DOCTYPE html>
                 const depicusMac = targetMac.replace(/:/g, '-');
                 const depicusUrl = 'https://www.depicus.com/wake-on-lan/woli?m=' + encodeURIComponent(depicusMac) + '&i=' + encodeURIComponent(targetDdns) + '&s=255.255.255.255&p=' + targetPort;
                 
-                showToast('「' + device.name + '」へパケットを送信中 (Depicus)...');
+                showToast('「' + device.name + '」へWoLパケットを送信中...');
 
-                let isDepicusSuccess = false;
-
-                // 1. プライマリ中継: Depicus (iframe)
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
                 iframe.src = depicusUrl;
                 document.body.appendChild(iframe);
 
                 iframe.onload = () => {
-                    isDepicusSuccess = true;
                     setTimeout(() => {
                         if (document.body.contains(iframe)) iframe.remove();
-                        showToast('「' + device.name + '」へパケットを送信しました！(Depicus)');
-                    }, 800);
+                        showToast('「' + device.name + '」へパケットを送信しました！');
+                    }, 1000);
                 };
 
-                // 2. セカンダリ中継: Depicus無応答(3.5秒)時の自動フォールバック送信
                 setTimeout(() => {
-                    if (!isDepicusSuccess) {
-                        showToast('⚠️ Depicus無応答を検知。バックアップAPIへ切替送信中...', true);
-                        if (document.body.contains(iframe)) iframe.remove();
-
-                        const backupApiUrl = 'https://api.wakeonlan.net/wake?mac=' + encodeURIComponent(targetMac) + '&host=' + encodeURIComponent(targetDdns) + '&port=' + targetPort;
-                        
-                        try {
-                            fetch(backupApiUrl, { mode: 'no-cors', cache: 'no-cache' });
-                        } catch(e) {}
-
-                        try {
-                            const img = new Image();
-                            img.src = backupApiUrl + '&_t=' + Date.now();
-                        } catch(e) {}
-
-                        setTimeout(() => {
-                            showToast('「' + device.name + '」へバックアップ経由で起動パケットを送信しました！');
-                        }, 1200);
+                    if (document.body.contains(iframe)) {
+                        iframe.remove();
+                        showToast('タイムアウトにより「' + device.name + '」へパケットを送信できませんでした。', true);
                     }
-                }, 3500);
+                }, 8000);
             }
 
             function openShareModal(targetIndex = null) {
