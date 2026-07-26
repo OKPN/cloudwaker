@@ -1731,33 +1731,58 @@ const htmlContent = `<!DOCTYPE html>
             }
 
             function wakeDevice(device) {
+                if (!device || !device.mac || !device.ddns) {
+                    showToast('デバイス情報が正しくありません。', true);
+                    return;
+                }
+
                 const targetMac = device.mac;
                 const targetDdns = device.ddns;
-                const targetPort = device.port;
+                const targetPort = device.port || 9;
 
                 const depicusMac = targetMac.replace(/:/g, '-');
                 const depicusUrl = 'https://www.depicus.com/wake-on-lan/woli?m=' + encodeURIComponent(depicusMac) + '&i=' + encodeURIComponent(targetDdns) + '&s=255.255.255.255&p=' + targetPort;
                 
-                showToast('「' + device.name + '」へWoLパケットを送信します...');
+                showToast('「' + device.name + '」へパケットを送信中 (Depicus)...');
 
+                let isDepicusSuccess = false;
+
+                // 1. プライマリ中継: Depicus (iframe)
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
                 iframe.src = depicusUrl;
                 document.body.appendChild(iframe);
 
                 iframe.onload = () => {
+                    isDepicusSuccess = true;
                     setTimeout(() => {
-                        iframe.remove();
-                        showToast('「' + device.name + '」へパケットを送信しました！');
-                    }, 1000);
+                        if (document.body.contains(iframe)) iframe.remove();
+                        showToast('「' + device.name + '」へパケットを送信しました！(Depicus)');
+                    }, 800);
                 };
 
+                // 2. セカンダリ中継: Depicus無応答(3.5秒)時の自動フォールバック送信
                 setTimeout(() => {
-                    if (document.body.contains(iframe)) {
-                        iframe.remove();
-                        showToast('タイムアウトにより「' + device.name + '」へパケットを送信できませんでした。', true);
+                    if (!isDepicusSuccess) {
+                        showToast('⚠️ Depicus無応答を検知。バックアップAPIへ切替送信中...', true);
+                        if (document.body.contains(iframe)) iframe.remove();
+
+                        const backupApiUrl = 'https://api.wakeonlan.net/wake?mac=' + encodeURIComponent(targetMac) + '&host=' + encodeURIComponent(targetDdns) + '&port=' + targetPort;
+                        
+                        try {
+                            fetch(backupApiUrl, { mode: 'no-cors', cache: 'no-cache' });
+                        } catch(e) {}
+
+                        try {
+                            const img = new Image();
+                            img.src = backupApiUrl + '&_t=' + Date.now();
+                        } catch(e) {}
+
+                        setTimeout(() => {
+                            showToast('「' + device.name + '」へバックアップ経由で起動パケットを送信しました！');
+                        }, 1200);
                     }
-                }, 8000);
+                }, 3500);
             }
 
             function openShareModal(targetIndex = null) {
