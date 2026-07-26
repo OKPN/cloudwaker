@@ -1119,6 +1119,18 @@ const htmlContent = `<!DOCTYPE html>
             </section>
         </main>
 
+        <!-- 外部バックアップ送信サイト案内カード -->
+        <section class="about-card" style="border-left-color: #38bdf8; margin-bottom: 1.5rem;">
+            <div class="about-content">
+                <i data-lucide="external-link" class="about-icon" style="color: #38bdf8;"></i>
+                <div class="about-text">
+                    <strong>🔗 外部バックアップWoL送信サイトのご案内</strong><br>
+                    万が一本サイトやDepicusの障害で起動パケットが届かない場合は、以下の外部WoL中継ツールサイトへ直接アクセスし、MACアドレス・IP（DDNS）・ポート番号を入力して手動送信をお試しください。<br>
+                    👉 <a href="https://wake-on-lan.samuraj-cz.com/" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-weight: 600; text-decoration: underline;">SAMURAJ-cz Wake On LAN ツール（外部サイト）</a>
+                </div>
+            </div>
+        </section>
+
         <!-- 必須設定（前提条件） -->
         <section class="prerequisites-card">
             <div class="prerequisites-header">
