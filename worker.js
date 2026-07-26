@@ -1511,45 +1511,62 @@ const htmlContent = `<!DOCTYPE html>
                 let portStr = portNumberInput.value.trim();
                 const rawEditIndex = editIndexInput.value.trim();
 
-                if (editingRawData && rawMac.includes('•')) {
-                    rawMac = editingRawData.mac;
+                let editIdx = (!isNaN(parseInt(rawEditIndex, 10)) && rawEditIndex !== "") ? parseInt(rawEditIndex, 10) : -1;
+                let targetDevice = (editIdx >= 0 && editIdx < devices.length) ? devices[editIdx] : null;
+
+                // 伏せ字(•)が含まれている場合は、editingRawDataまたは既存デバイスの元データを確実に復元
+                if (rawMac.includes('•') || rawMac === "") {
+                    if (editingRawData && editingRawData.mac) rawMac = editingRawData.mac;
+                    else if (targetDevice && targetDevice.mac) rawMac = targetDevice.mac;
                 }
-                if (editingRawData && ddns.includes('•')) {
-                    ddns = editingRawData.ddns;
+
+                if (ddns.includes('•') || ddns === "") {
+                    if (editingRawData && editingRawData.ddns) ddns = editingRawData.ddns;
+                    else if (targetDevice && targetDevice.ddns) ddns = targetDevice.ddns;
                 }
-                let port = (editingRawData && portStr.includes('•')) ? editingRawData.port : (parseInt(portStr, 10) || 9);
+
+                let port = 9;
+                if (portStr.includes('•') || portStr === "") {
+                    if (editingRawData && editingRawData.port) port = editingRawData.port;
+                    else if (targetDevice && targetDevice.port) port = targetDevice.port;
+                } else {
+                    port = parseInt(portStr, 10) || 9;
+                }
 
                 const formattedMac = parseAndFormatMac(rawMac);
                 if (!formattedMac) {
-                    showToast('無効なMACアドレスの形式です。', true);
+                    showToast('MACアドレスを入力または表示確認してください。', true);
                     return;
                 }
 
-                const deviceData = { name, mac: formattedMac, ddns, port };
+                if (!ddns) {
+                    showToast('DDNS / IPアドレスを入力してください。', true);
+                    return;
+                }
+
+                const deviceData = { name: name || '名称未設定', mac: formattedMac, ddns, port };
 
                 let targetIndex = -1;
 
-                if (rawEditIndex !== "" && !isNaN(parseInt(rawEditIndex, 10))) {
-                    targetIndex = parseInt(rawEditIndex, 10);
+                if (editIdx >= 0 && editIdx < devices.length) {
+                    targetIndex = editIdx;
                 } else if (editingRawData) {
-                    // editingRawDataと一致する既存デバイスを特定
                     targetIndex = devices.findIndex(d => d.mac === editingRawData.mac && d.ddns === editingRawData.ddns);
                 }
 
                 if (targetIndex >= 0 && targetIndex < devices.length) {
-                    // 確実に指定インデックスの端末データ（名前を含む全項目）を上書き更新
+                    // 指定インデックスの端末データ（名前を含む全項目）を100%確実に上書き更新
                     devices[targetIndex] = deviceData;
-                    showToast('「' + name + '」の端末情報を更新しました！');
+                    showToast('「' + deviceData.name + '」の端末情報を更新しました！');
                     exitEditMode();
                 } else {
-                    // 同名または同MAC+DDNSの端末があれば更新、無ければ新規追加
-                    const matchIdx = devices.findIndex(d => d.name === name || (d.mac === formattedMac && d.ddns === ddns));
+                    const matchIdx = devices.findIndex(d => d.name === deviceData.name || (d.mac === formattedMac && d.ddns === ddns));
                     if (matchIdx !== -1) {
                         devices[matchIdx] = deviceData;
-                        showToast('「' + name + '」の端末情報を更新しました！');
+                        showToast('「' + deviceData.name + '」の端末情報を更新しました！');
                     } else {
                         devices.push(deviceData);
-                        showToast('「' + name + '」を新規デバイスとして登録しました。');
+                        showToast('「' + deviceData.name + '」を新規デバイスとして登録しました。');
                     }
                 }
 
