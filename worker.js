@@ -1020,7 +1020,7 @@ const htmlContent = `<!DOCTYPE html>
         <section class="about-card">
             <div class="about-content">
                 <i data-lucide="shield-check" class="about-icon"></i>
-                <div class="about-text"><strong>🛡️ このサイトについて</strong>本サイトは、<strong>Cloudflare Workers 上に構築された完全サーバーレスの Wake on LAN (WoL) 操作パネル</strong>です。デバイスの起動リクエストは、信頼性の高い外部WoL送信サービス（<a href="https://www.depicus.com" target="_blank" rel="noopener noreferrer">Depicus</a>）を経由して自宅へ送信されます。入力したデバイス情報や暗号化データは、すべてクライアント（ブラウザ）端末上と中継サービス間のみで処理されます。本サイトのサーバー側にはいかなるデータも保存・収集されないため、非常に安全にご利用いただけます。</div>
+                <div class="about-text"><strong>🛡️ このサイトについて</strong>本サイトは、<strong>Cloudflare Workers 上に構築された完全サーバーレスの Wake on LAN (WoL) 操作パネル</strong>です。デバイスの起動リクエストは、実績豊富な外部WoL送信サービス（<a href="https://www.depicus.com" target="_blank" rel="noopener noreferrer">Depicus</a>）を<strong>プライマリ（メイン中継）</strong>とし、バックアップWoL REST APIを<strong>セカンダリ（予備中継）</strong>とする二重化自動フォールバックシステムで自宅へ送信されます。入力したデバイス情報や暗号化データは、すべてクライアント（ブラウザ）端末上と中継サービス間のみで処理され、サーバー側にはいかなるデータも保存・収集されません。</div>
             </div>
         </section>
 
@@ -1262,12 +1262,23 @@ const htmlContent = `<!DOCTYPE html>
                         Depicus（<a href="https://www.depicus.com" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; border-bottom: 1px dashed var(--primary);">www.depicus.com</a>）は、Web経由で指定したIP・MACアドレスへWake on LAN用パケットを中継発信してくれる歴史のある外部サービスです。本サイトはこの中継機能を利用してPCを遠隔起動しています。外部中継サービスを利用することに懸念や不安がある場合は、大変恐れ入りますが本サイトのご利用をお控えください。
                     </div>
                 </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span class="faq-question-badge">Q6</span>
+                        <span>中継サービスのDepicusがダウンしたり障害が起きた場合はどうなりますか？</span>
+                    </div>
+                    <div class="faq-answer">
+                        <strong>A. 自動フォールバック（予備API切替送信）機能により、問題なく遠隔起動できます。</strong><br>
+                        本サイトは「Depicus (プライマリ)」と「バックアップ WoL REST API (セカンダリ)」による二重化中継システムを採用しています。Depicusからの応答が3.5秒以上途絶えた場合（障害時など）、システムが自動的に無応答を検知し、セカンダリのバックアップWoL REST APIへ切替送信を行います。そのため、メイン中継がダウンしていても問題なく自宅PCを遠隔起動できます。
+                    </div>
+                </div>
             </div>
         </section>
 
         <!-- フッター -->
         <footer class="app-footer">
-            <p>&copy; 2026 CloudWaker. Power-controlled via Depicus WoL Engine.</p>
+            <p>&copy; 2026 CloudWaker. Power-controlled via Depicus Engine (Primary) & Backup WoL API (Secondary).</p>
             <p style="margin-top: 0.5rem;"><a href="https://github.com/OKPN/cloudwaker" target="_blank" rel="noopener noreferrer" style="color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; transition: color 0.2s ease;"><i data-lucide="github" style="width: 14px; height: 14px;"></i> GitHub Repository</a></p>
         </footer>
     </div>
