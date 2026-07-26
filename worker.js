@@ -1740,24 +1740,45 @@ const htmlContent = `<!DOCTYPE html>
                 
                 showToast('「' + device.name + '」へWoLパケットを送信します...');
 
+                // GET送信用の非表示iframe
+                const iframeName = 'depicus_frame_' + Date.now();
                 const iframe = document.createElement('iframe');
+                iframe.name = iframeName;
                 iframe.style.display = 'none';
                 iframe.src = depicusUrl;
                 document.body.appendChild(iframe);
 
-                iframe.onload = () => {
-                    setTimeout(() => {
-                        iframe.remove();
-                        showToast('「' + device.name + '」へパケットを送信しました！');
-                    }, 1000);
+                // POST送信用の非表示フォーム（補強）
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'https://www.depicus.com/wake-on-lan/woli-ajax.php';
+                form.target = iframeName;
+                form.style.display = 'none';
+
+                const postParams = {
+                    mac: depicusMac,
+                    ip: targetDdns,
+                    subnet: '255.255.255.255',
+                    port: targetPort,
+                    secureon: ''
                 };
 
+                for (const key in postParams) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = postParams[key];
+                    form.appendChild(input);
+                }
+
+                document.body.appendChild(form);
+                try { form.submit(); } catch(e) {}
+
                 setTimeout(() => {
-                    if (document.body.contains(iframe)) {
-                        iframe.remove();
-                        showToast('「' + device.name + '」へパケットを送信しました（T/O）');
-                    }
-                }, 8000);
+                    if (document.body.contains(iframe)) iframe.remove();
+                    if (document.body.contains(form)) form.remove();
+                    showToast('「' + device.name + '」へパケットを送信しました！');
+                }, 1500);
             }
 
             function openShareModal(targetIndex = null) {
