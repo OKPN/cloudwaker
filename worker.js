@@ -1793,14 +1793,14 @@ const htmlContent = `<!DOCTYPE html>
 
                 const deviceKey = device.mac + '_' + device.ddns;
                 if (activeWakingDevices.has(deviceKey)) {
-                    showToast('連打防止: 連送は3秒以上空けて送信してください。', true);
+                    showToast('連打防止: 連送は5秒以上空けて送信してください。', true);
                     return;
                 }
 
                 activeWakingDevices.add(deviceKey);
                 setTimeout(() => {
                     activeWakingDevices.delete(deviceKey);
-                }, 3000);
+                }, 5000);
 
                 const targetMac = device.mac;
                 const targetDdns = device.ddns;
