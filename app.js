@@ -367,10 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="device-title-row">
                         <span class="device-title">${escapeHtml(device.name)}</span>
                     </div>
-                    <div class="device-details">
-                        <span><strong style="color: var(--primary);">MAC:</strong> ${device.mac}</span>
-                        <span><strong style="color: var(--accent);">HOST:</strong> ${escapeHtml(device.ddns)}:${device.port}</span>
-                    </div>
                 </div>
                 <div class="device-actions">
                     <button class="btn-action btn-wake" data-index="${index}" title="起動パケット送信"><i data-lucide="power"></i></button>
