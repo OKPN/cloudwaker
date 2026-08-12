@@ -1,35 +1,37 @@
 # ⚡ CloudWaker
 
-🌐 **Live Application:** [https://cloudwaker.k7m.f5.si](https://cloudwaker.k7m.f5.si) *(Workers Mirror: [https://cloudwaker.okpn.workers.dev](https://cloudwaker.okpn.workers.dev))*
+🌐 **Live Application:** [https://okpn.github.io/cloudwaker/](https://okpn.github.io/cloudwaker/)
 
-[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
+[![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-222222?logo=github&logoColor=white)](https://okpn.github.io/cloudwaker/)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-F38020?logo=cloudflare&logoColor=white)](https://pages.cloudflare.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-**CloudWaker** is a modern, fully serverless, and stateless Wake on LAN (WoL) web dashboard designed to trigger remote power-on for home computers from any web browser.
+**CloudWaker** is a modern, static, fully client-side Wake on LAN (WoL) web dashboard designed to trigger remote power-on for home computers directly from any web browser.
 
-Powered by Cloudflare Workers and utilizing the trusted [Depicus](https://www.depicus.com) WoL relay engine, CloudWaker offers a secure, aesthetic, and privacy-first solution with zero server-side data retention.
+Built with a privacy-first philosophy, CloudWaker is **100% serverless and stateless**. It requires no backend server or database—all configurations stay securely in your browser or within encrypted self-contained URLs.
 
 ---
 
-## 💡 Key Architectural Concepts
+## 💡 Key Architectural & Privacy Features
 
-### 1. Stateless "URL-as-a-Database" Architecture
-CloudWaker operates on a strict **zero-server-storage** model. There is no database, session, or backend storage on Cloudflare Workers. 
-* All device configurations are either encrypted and stored locally in the user's browser (`localStorage`) or encoded directly into self-contained, encrypted share URLs (`?data=AES256(...)`).
-* The Web application itself acts purely as a stateless UI renderer and packet-dispatching execution engine.
+### 1. 100% Client-Side & Pure Static Architecture
+* **Zero Backend Storage:** No databases, sessions, or backend servers. The app consists purely of static HTML, CSS, and JavaScript.
+* **Depicus Engine Relay:** Dispatches WoL magic packets directly from the client browser via an invisible background frame powered by the trusted [Depicus](https://www.depicus.com) WoL relay engine.
 
-### 2. Privacy-First Masking & Local AES Encryption
-* Sensitive connection parameters (MAC address, DDNS host, custom port) can be encrypted client-side using AES-256 before being stored.
-* On-screen displays mask sensitive details (e.g., `●●:●●:●●:●●:●●:●●` & `●●●●●●●● (Protected)`), preventing shoulder surfing while editing or viewing.
+### 2. Privacy-First UI & Local AES-256 Encryption
+* **Clean & Private UI:** Registered device lists conceal sensitive details (MAC address & DDNS host) to prevent shoulder surfing.
+* **Client-Side Storage:** All registered devices are saved locally in the browser's `localStorage`.
 
-### 3. Protected Share Links (6-Digit PIN)
-* Shared URLs can be locked with a 6-digit passcode (PIN). The encrypted payload remains unreadable until the recipient enters the correct PIN.
+### 3. Protected Share Links & QR Code Generator (6-Digit PIN)
+* Generate self-contained share links (`?data=AES256(...)`) or QR codes.
+* Secure share links with a custom 6-digit PIN code. The encrypted payload remains unreadable until the correct PIN is entered.
 
-### 4. One-Tap AutoWake & Notification Integration
-* URLs containing the `&autowake=true` parameter automatically fire the WoL magic packet 0.6 seconds after page load. This enables seamless one-tap power-on from mobile home screen shortcuts or push notifications (e.g., via Telegram bot integrations like *Dual Sleeper*).
+### 4. One-Tap AutoWake & Integration with Dual Sleeper
+* URLs containing `autoWake` parameter automatically fire WoL magic packets upon page load.
+* Enables seamless one-tap power-on from mobile home screen shortcuts or push notifications sent by PC power management apps like **[Dual Sleeper](https://github.com/OKPN/dual-sleeper)**.
 
-### 5. Built-in AI Prompt Assistant
-* Includes an interactive, collapsible AI prompt template designed to help non-technical users instantly query AI tools (ChatGPT, Copilot, Gemini, Claude) for their specific router configuration steps (DHCP static IP, Static ARP, Port Forwarding).
+### 5. Interactive AI Router Setup Assistant
+* Built-in collapsible AI prompt template designed to assist users in querying AI tools (ChatGPT, Copilot, Gemini, Claude) for router-specific setup steps (Static IP, Static ARP, Port Forwarding).
 
 ---
 
@@ -39,29 +41,39 @@ CloudWaker operates on a strict **zero-server-storage** model. There is no datab
 [ Home PC (Dual Sleeper) ]
        │ 
        ├─ Monitors idle state & GPU protection -> Auto sleep
-       └─ On sleep transition: Sends Telegram notification with AutoWake URL
-                                 │
-                                 ▼ (Tap notification link on smartphone)
-[ CloudWaker (Cloudflare Workers / Web UI) ]
+       └─ On sleep transition: Sends push notification with AutoWake URL
+                                  │
+                                  ▼ (Tap notification link on smartphone)
+[ CloudWaker (GitHub Pages / Web UI) ]
        │ 
        └─ Decrypts parameters & dispatches magic packet via Depicus engine
-                                 │
-                                 ▼
-                    [ Home Router ➔ Target PC Wakes Up ]
+                                  │
+                                  ▼
+                     [ Home Router ➔ Target PC Wakes Up ]
 ```
 
 ---
 
 ## ⚙️ Mandatory Infrastructure Prerequisites
 
-To successfully wake a home computer over the Internet via WoL, the target network must fulfill:
+To successfully wake a home computer over the Internet via WoL, your home network must fulfill:
 
-1. **Wired Ethernet Connection** (Wi-Fi is NOT supported for WoL wake-up)
+1. **Wired Ethernet Connection** (Wi-Fi is NOT supported for WoL packet reception)
 2. **Motherboard (BIOS/UEFI) WoL Enablement** ("Power On By PCI-E/LAN")
 3. **OS / Network Adapter Configuration** ("Wake on Magic Packet" enabled)
 4. **Router Static IP Reservation** (DHCP MAC-to-IP binding)
 5. **Router Static ARP Table Entry** (Binding IP & MAC in the router's ARP cache)
 6. **Router Port Forwarding / Custom Port Public Binding**
+
+---
+
+## 🚀 Deployment
+
+Since CloudWaker is a pure static web application, it can be hosted anywhere for free:
+
+* **GitHub Pages:** Push to the `main` or `experiment` branch and enable GitHub Pages in Repository Settings.
+* **Cloudflare Pages:** Connect your GitHub repository and deploy as a static site (No build command required, output directory: `/`).
+* **Local Use:** Simply download `index.html`, `style.css`, and `app.js` to your device and double-click `index.html` to open it in any browser.
 
 ---
 
