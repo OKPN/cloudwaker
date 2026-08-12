@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ブラウザから手軽に、美しく、リモートでPCを起動。静的サイトから直接自宅のPCへWake on LANパケットを中継送信するモダンなWebユーティリティ。">
-    <title>EtherWake - Web-based Wake on LAN</title>
+    <title>CloudWaker - Web-based Wake on LAN</title>
     <!-- Google Fonts: Outfit & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- QRCode.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- CryptoJS (AES Encryption) CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,10 +26,18 @@
         <header class="app-header">
             <div class="logo">
                 <i data-lucide="zap" class="logo-icon"></i>
-                <h1>EtherWake</h1>
+                <h1>CloudWaker</h1>
             </div>
             <p class="subtitle">Cloud-triggered Wake on LAN client</p>
         </header>
+
+        <!-- このサイトについて -->
+        <section class="about-card">
+            <div class="about-content">
+                <i data-lucide="shield-check" class="about-icon"></i>
+                <div class="about-text"><strong>🛡️ このサイトについて</strong>本サイトは、<strong>GitHub Pages 上で動作する完全ステートレスな Wake on LAN (WoL) 操作パネル</strong>です。デバイスの起動リクエストは、外部WoL送信サービス（<a href="https://www.depicus.com" target="_blank" rel="noopener noreferrer">Depicus</a>）を経由して自宅へ送信されます。入力したデバイス情報や暗号化データは、すべてクライアント（ブラウザ）端末上と中継サービス間のみで処理され、サーバー側にはいかなるデータも保存・収集されません。</div>
+            </div>
+        </section>
 
         <!-- メイングリッド -->
         <main class="app-main">
@@ -50,8 +62,7 @@
                         <label for="mac-address">MACアドレス</label>
                         <div class="input-wrapper">
                             <i data-lucide="cpu" class="input-icon"></i>
-                            <input type="text" id="mac-address" placeholder="XX:XX:XX:XX:XX:XX" required 
-                                   pattern="^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$|^([0-9A-Fa-f]{12})$">
+                            <input type="text" id="mac-address" placeholder="XX:XX:XX:XX:XX:XX" required>
                         </div>
                         <span class="help-text">16進数12桁（コロンかハイフン区切り、または区切りなし）</span>
                     </div>
@@ -68,9 +79,15 @@
                         <label for="port-number">ポート番号</label>
                         <div class="input-wrapper">
                             <i data-lucide="hash" class="input-icon"></i>
-                            <input type="number" id="port-number" value="9" min="1" max="65535" required>
+                            <input type="text" id="port-number" value="9" required>
                         </div>
-                        <span class="help-text">通常は 9 または 7 です。</span>
+                    </div>
+
+                    <div class="form-group-checkbox">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="show-raw-details-checkbox">
+                            <span>登録情報を表示する（一時表示）</span>
+                        </label>
                     </div>
 
                     <button type="submit" id="save-btn" class="btn btn-primary">
@@ -80,14 +97,32 @@
                     <button type="button" id="cancel-edit-btn" class="btn btn-secondary hidden">
                         <span>キャンセル</span>
                     </button>
+
+                    <!-- セキュリティ注記 -->
+                    <div class="security-note">
+                        <i data-lucide="shield-check" class="security-icon"></i>
+                        <span>入力されたデバイス情報はサーバーに送信されず、お使いのブラウザ（ローカル）にのみ安全に保存されます。</span>
+                    </div>
                 </form>
             </section>
 
             <!-- デバイス一覧 -->
-            <section class="card list-card">
-                <div class="card-header">
-                    <i data-lucide="list" class="header-icon"></i>
-                    <h2>登録済みデバイス</h2>
+            <section class="device-list-card card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="list" class="header-icon"></i>
+                        <h2>登録済みデバイス</h2>
+                    </div>
+                    <div style="display: flex; gap: 0.4rem; align-items: center;">
+                        <button id="add-new-device-btn" class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem;">
+                            <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                            <span>新規追加</span>
+                        </button>
+                        <button id="batch-share-btn" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.3rem;">
+                            <i data-lucide="share-2" style="width: 14px; height: 14px;"></i>
+                            <span>選択共有</span>
+                        </button>
+                    </div>
                 </div>
                 <div id="device-list" class="device-list">
                     <!-- JavaScriptでデバイスカードを挿入 -->
@@ -99,11 +134,247 @@
             </section>
         </main>
 
+        <!-- 外部バックアップ送信サイト案内カード -->
+        <section class="about-card" style="border-left-color: #38bdf8; margin-bottom: 1.5rem;">
+            <div class="about-content">
+                <i data-lucide="external-link" class="about-icon" style="color: #38bdf8;"></i>
+                <div class="about-text">
+                    <strong>🔗 外部バックアップWoL送信サイトのご案内</strong><br>
+                    万が一本サイトやDepicusの障害で起動パケットが届かない場合は、以下の外部WoL中継ツールサイトへ直接アクセスし、MACアドレス・IP（DDNS）・ポート番号を入力して手動送信をお試しください。<br>
+                    👉 <a href="https://wake-on-lan.samuraj-cz.com/" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-weight: 600; text-decoration: underline;">SAMURAJ-cz Wake On LAN ツール（外部サイト）</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 必須設定（前提条件） -->
+        <section class="prerequisites-card">
+            <div class="prerequisites-header">
+                <i data-lucide="settings" class="header-icon"></i>
+                <h3>⚙️ 自宅PCへのWoL送信を成立させるための必須設定</h3>
+            </div>
+            <ul class="prerequisites-list">
+                <li>
+                    <strong><span>①</span> 自宅PCの有線LAN接続 & OS(Ethernetアダプタ)でのWoL有効化</strong><span>PCをLANケーブルで直接ルーターに接続し、OSのデバイスマネージャー（Ethernetアダプタの詳細設定）から「Wake on Magic Packet」や「Wake on LAN」を有効にします。<span style="color: var(--danger); font-weight: 600; display: block; margin-top: 0.25rem;">※Wi-Fi（無線LAN）接続では本システムによるWoL起動は行えません。必ず有線LANケーブルでルーターと接続してください。</span></span>
+                </li>
+                <li>
+                    <strong><span>②</span> マザーボード（BIOS/UEFI）でのWoL有効化</strong><span>PC起動時にBIOS/UEFI画面に入り、「Power On By PCI-E/LAN」や「Wake on LAN」などの遠隔起動設定を有効にします。</span>
+                </li>
+                <li>
+                    <strong><span>③</span> 自宅PCのローカルIPアドレスの固定</strong><span>ルーターのDHCP固定割当機能などを使い、対象PCのプライベートIPアドレスを常に一定にします。</span>
+                </li>
+                <li>
+                    <strong><span>④</span> 無料DDNSサービスの利用</strong><span>自宅のグローバルIPアドレスの変動に対応するため、ルーター付属のDDNS機能や、<a href="https://f5.si" target="_blank" rel="noopener noreferrer">f5.si</a> などの無料DDNSサービスを利用して固定のホスト名を設定します。</span>
+                </li>
+                <li>
+                    <strong><span>⑤</span> ルーターでの「静的ARP」設定</strong><span>PCがスリープするとルーターの宛先対応表（ARPキャッシュ）が消えてパケットが届かなくなります。これを防ぐため、IPアドレスとMACアドレスの組み合わせをルーターに強固に記憶させます。<span style="color: var(--danger); font-weight: 600; display: block; margin-top: 0.25rem;">※一部の市販ルーター（特に国内メーカーのエントリーモデル等）にはこの設定がない機種もあり、その場合はスリープ後しばらく（数分〜数十分）経過すると外部からの起動ができなくなるため、本サービスを介した安定した運用が難しくなります。</span></span>
+                </li>
+                <li>
+                    <strong><span>⑥</span> ポートフォワーディングの設定</strong><span>外部から届いた起動信号を対象PCへ転送します。セキュリティ確保のため、外部に公開するポートは一般的なWoLポート（9など）ではなく、任意のカスタムポート（例：通常使用されないランダムな高位ポート番号）に変更して設定することを推奨します。</span>
+                </li>
+            </ul>
+        </section>
+
+        <!-- AI質問用プロンプトテンプレート（折りたたみ式） -->
+        <section class="ai-prompt-card">
+            <details class="ai-prompt-details">
+                <summary class="ai-prompt-summary">
+                    <div class="ai-prompt-summary-title">
+                        <i data-lucide="bot" class="header-icon" style="color: var(--primary);"></i>
+                        <span>🤖 ルーター設定に困ったら？：AI質問用プロンプトテンプレート</span>
+                    </div>
+                    <i data-lucide="chevron-down" style="width: 1.2rem; height: 1.2rem; color: var(--text-secondary);"></i>
+                </summary>
+                <div class="ai-prompt-content">
+                    <p>お使いのルーターの型番や設定項目がよく分からない場合は、以下のプロンプト（質問文）をコピーし、お好みのAIチャット（ChatGPTやGeminiなど）に貼り付けて質問してみてください。お使いの環境に合わせた手順をAIが教えてくれます。</p>
+                    
+                    <div class="prompt-box-wrapper">
+                        <button id="copy-prompt-btn" class="btn-copy-prompt" type="button">
+                            <i data-lucide="copy" style="width: 12px; height: 12px;"></i>
+                            <span>テンプレートをコピー</span>
+                        </button>
+                        <div id="prompt-text" class="prompt-box">私は「Depicus」などのWebサービスを利用して、外部から自宅LAN内のPCへWake on LAN (WoL) パケットを送信し遠隔起動させたいと考えています。
+能力的には以下の6つの設定が必要なようです。
+
+【必須設定一覧】
+1. 自宅PCの有線LAN接続 & OS(Ethernetアダプタ)でのWoL有効化
+2. マザーボード(BIOS/UEFI)でのWoL有効化
+3. 自宅PCのローカルIPアドレスの固定 (ルーターのDHCP固定割当/MAC予約機能を使用)
+4. 無料DDNSサービスの利用 (f5.si やルーター付属DDNS)
+5. ルーターでの「静的ARP」設定 (IPとMACの組み合わせ記憶)
+6. ルーターでの「ポートフォワーディング」設定 (セキュリティのためにカスタムポートを利用する方法含む)
+
+私のルーターの型番は「【ここにルーターの型番を入力 例: WSR-3200AX4S / WRC-X3000GS など】」で、PCのOSは「【Windows 11 / 10 など】」、PC/マザーボード型番は「【型番/メーカー名など】」です。
+
+特に「IPアドレスの固定」はPC側ではなくルーター側のDHCP固定割当（MACアドレスとIPの予約）機能を使って設定したいと考えています。
+上記の設定を成立させるために、具体的になにをどのような順番で設定すれば良いか、初心者にも分かりやすく丁寧に教えてください。</div>
+                    </div>
+
+                    <strong style="color: var(--text-primary); font-size: 0.85rem; display: block; margin-top: 1rem;">🔗 主要AIサービス（クリックしてすぐに質問できます）</strong>
+                    <div class="ai-links-grid">
+                        <a href="https://chatgpt.com" target="_blank" rel="noopener noreferrer" class="ai-link-btn">
+                            <span>🟢 ChatGPT</span>
+                        </a>
+                        <a href="https://copilot.microsoft.com" target="_blank" rel="noopener noreferrer" class="ai-link-btn">
+                            <span>🔵 Copilot</span>
+                        </a>
+                        <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" class="ai-link-btn">
+                            <span>🔴 Gemini</span>
+                        </a>
+                        <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="ai-link-btn">
+                            <span>🟣 Claude</span>
+                        </a>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <!-- よくある質問 (Q&A) -->
+        <section class="faq-card">
+            <div class="faq-header">
+                <i data-lucide="help-circle" class="header-icon"></i>
+                <h3>❓ Q & A</h3>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span class="faq-question-badge">Q1</span>
+                        <span>使ってみたいのですが、自分の環境で動作するか分かりません。最低限どこを確認すべきですか？</span>
+                    </div>
+                    <div class="faq-answer">
+                        <strong>A. ハードウェア（機器・環境）面での必須条件は「①有線LAN接続」と「②ルーターの静的ARP機能」の2点のみです。</strong><br>
+                        この2点さえクリアできていれば、残りの設定（IP固定やポートフォワーディングなど）は手順通りに進めていくことでほぼ確実に接続・遠隔起動が可能です。まずは「PCがLANケーブルでルーターに繋がれているか」と「お使いのルーターに静的ARP（IPとMACの固定記憶）機能があるか」の2点をご確認ください。
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span class="faq-question-badge">Q2</span>
+                        <span>リンクアクセス時の自動起動（AutoWake）はスマホからでも使えますか？</span>
+                    </div>
+                    <div class="faq-answer">
+                        <strong>A. はい、問題なく使えます。</strong><br>
+                        スマホのホーム画面に自動起動用URLのショートカット（Webアイコン）を配置しておけば、アプリのように「タップするだけで自宅PCを即座に遠隔起動」することができます。
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span class="faq-question-badge">Q3</span>
+                        <span>端末を登録した状態でこのサイトのURL（トップページ）を誰かに共有した場合、登録した端末情報も相手に見られてしまいますか？</span>
+                    </div>
+                    <div class="faq-answer">
+                        <strong>A. いいえ、共有されません。</strong><br>
+                        本サイトのトップページURL自体には、あなたが登録した端末情報は一切含まれていません。登録データはお使いのブラウザ（ローカルストレージ）内にのみ保存されるため、サイトのURLをそのまま誰かに教えても、あなたの登録端末が相手に見られることはありません。
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span class="faq-question-badge">Q4</span>
+                        <span>「共有」ボタンから発行した「共有URL」には、端末の情報が含まれますか？</span>
+                    </div>
+                    <div class="faq-answer">
+                        <strong>A. はい、含まれます。そのため基本的には他人に共有しないことをお勧めします。</strong><br>
+                        共有URLには、MACアドレスや接続先などのパラメータが暗号化された状態で埋め込まれています。URLを知っていれば誰でも起動信号を送信できる状態になるため、基本的には共有URLを第三者に教えないでください。やむを得ず共有する場合は、必ず手動ロックPIN（最大6桁）を設定するなど細心の注意を払ってください。
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span class="faq-question-badge">Q5</span>
+                        <span>中継送信で利用している「Depicus」とはどういうサイトですか？</span>
+                    </div>
+                    <div class="faq-answer">
+                        <strong>A. WebからWoLパケットを発信してくれる老舗の外部中継サービスです。</strong><br>
+                        Depicus（<a href="https://www.depicus.com" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: none; border-bottom: 1px dashed var(--primary);">www.depicus.com</a>）は、Web経由で指定したIP・MACアドレスへWake on LAN用パケットを中継発信してくれる歴史のある外部サービスです。本サイトはこの中継機能を利用してPCを遠隔起動しています。外部中継サービスを利用することに懸念や不安がある場合は、大変恐れ入りますが本サイトのご利用をお控えください。
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span class="faq-question-badge">Q6</span>
+                        <span>本サイトやDepicusが障害等で起動しない場合、他の代替手段はありますか？</span>
+                    </div>
+                    <div class="faq-answer">
+                        <strong>A. 外部のバックアップWoLサイトのご利用や、自前でのWoL送信手段のご用意をおすすめします。</strong><br>
+                        万が一Depicus側の障害等で本サイトから起動できない場合は、外部中継ツールサイト（例: <a href="https://wake-on-lan.samuraj-cz.com/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">SAMURAJ-cz Wake On LAN ツール</a>）から手動送信をお試しください。<br><br>
+                        なお、外部サービスの障害やダウンに一切左右されない安定した遠隔起動環境を求める場合は、<strong>ご自身のスマートフォン（WoL対応アプリ）などを利用して、自分専用のWoL送信手段を用意しておくことをおすすめします。</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- フッター -->
         <footer class="app-footer">
-            <p>&copy; 2026 EtherWake. Power-controlled via Depicus WoL Engine.</p>
-            <p class="warning-text">※ 外部から起動するには、自宅ルーターの静的ARP/ポートフォワーディング設定が必要です。</p>
+            <p>&copy; 2026 CloudWaker. Power-controlled via Depicus WoL Engine.</p>
+            <p style="margin-top: 0.5rem;"><a href="https://github.com/OKPN/cloudwaker" target="_blank" rel="noopener noreferrer" style="color: var(--text-secondary); text-decoration: none; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.35rem; transition: color 0.2s ease;"><i data-lucide="github" style="width: 14px; height: 14px;"></i> GitHub Repository (MIT License)</a></p>
         </footer>
+    </div>
+
+    <!-- 共有モーダル -->
+    <div id="share-modal" class="modal hidden">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <i data-lucide="share-2" class="header-icon"></i>
+                <h2>デバイス設定の共有</h2>
+                <button id="close-modal-btn" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="share-device-selector" style="margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.4rem; padding: 0.5rem; background: rgba(255,255,255,0.03); border-radius: 8px;"></div>
+                <div class="pin-input-group">
+                    <label for="share-pin-input">個別の手動ロックPIN（最大6桁）:</label>
+                    <input type="password" id="share-pin-input" maxlength="6" placeholder="空欄で自動暗号化">
+                </div>
+                <div style="margin: 0.5rem 0;">
+                    <label class="checkbox-label" style="font-size: 0.85rem;">
+                        <input type="checkbox" id="share-autowake-checkbox">
+                        <span>リンクをクリック時に自動起動する</span>
+                    </label>
+                </div>
+                <div class="qrcode-container">
+                    <div id="qrcode"></div>
+                </div>
+                <div class="share-url-wrapper">
+                    <input type="text" id="share-url-input" readonly>
+                    <button id="copy-url-btn" class="btn btn-primary">
+                        <i data-lucide="copy"></i>
+                        <span>コピー</span>
+                    </button>
+                </div>
+                <div class="share-notice-box" style="margin-top: 1.25rem; padding: 0.75rem 0.9rem; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.82rem; color: var(--text-secondary); text-align: left; line-height: 1.5;">
+                    <div style="font-weight: 600; color: #fbbf24; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.35rem;">
+                        <i data-lucide="shield-alert" style="width: 15px; height: 15px; color: #fbbf24;"></i>
+                        <span>共有時の注意事項 ＆ アプリ連携</span>
+                    </div>
+                    <ul style="padding-left: 1.1rem; margin: 0; display: flex; flex-direction: column; gap: 0.35rem;">
+                        <li>共有URLには暗号化された端末情報が含まれます。セキュリティ保護のため、むやみに他人に共有しないでください。</li>
+                        <li>やむを得ず第三者に共有する場合は、必ず事前に<strong>手動ロックPIN（最大6桁）</strong>を設定してください。</li>
+                        <li>PC電源管理アプリ <a href="https://github.com/OKPN/dual-sleeper" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: 600; text-decoration: underline;">Dual Sleeper (GitHub)</a> と連携するときは、「リンクをクリック時に自動起動」をオンにしたうえでコピーしたURLを用いてください。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN解除（復号）モーダル -->
+    <div id="pin-modal" class="modal hidden">
+        <div class="modal-content card text-center">
+            <div class="modal-header">
+                <i data-lucide="lock" class="header-icon"></i>
+                <h2>保護された共有リンク</h2>
+                <button id="close-pin-modal-btn" class="btn-close">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <p class="modal-desc">この設定は手動PINで保護されています。送信者が設定したPINコードを入力してください。</p>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <input type="password" id="unlock-pin-input" placeholder="例: 114514" maxlength="6" style="text-align: center; font-size: 1.25rem; letter-spacing: 0.2em; padding: 0.75rem; background: rgba(10, 15, 30, 0.8); border: 1px solid var(--border-color); border-radius: 12px; color: white; width: 100%;">
+                </div>
+                <button id="unlock-btn" class="btn btn-primary" style="width: 100%;">
+                    <i data-lucide="key"></i>
+                    <span>復号して登録する</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- JavaScript の読み込み -->
