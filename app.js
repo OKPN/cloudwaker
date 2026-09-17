@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadDevices() {
-        let stored = localStorage.getItem('cloudwaker_devices');
+        let stored = localStorage.getItem('wakeonslaught_devices') || localStorage.getItem('cloudwaker_devices');
         if (stored) {
             try {
                 devices = JSON.parse(stored);
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveDevices() {
-        localStorage.setItem('cloudwaker_devices', JSON.stringify(devices));
+        localStorage.setItem('wakeonslaught_devices', JSON.stringify(devices));
         try {
             if (window.location.search.includes('data=')) {
                 window.history.replaceState({}, document.title, window.location.pathname);
