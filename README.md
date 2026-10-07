@@ -1,12 +1,11 @@
-# ⚡ CloudWaker
+# ⚡ WakeOnslaught
 
-🌐 **Live Application:** [https://okpn.github.io/cloudwaker/](https://okpn.github.io/cloudwaker/)
+🌐 **Live Application:** [https://wakeonslaught.pages.dev/](https://wakeonslaught.pages.dev/)
 
-[![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-222222?logo=github&logoColor=white)](https://okpn.github.io/cloudwaker/)
-[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-F38020?logo=cloudflare&logoColor=white)](https://pages.cloudflare.com/)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-F38020?logo=cloudflare&logoColor=white)](https://wakeonslaught.pages.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-**CloudWaker** is a modern, static, fully client-side Wake on LAN (WoL) web dashboard designed to trigger remote power-on for home computers directly from any web browser.
+**WakeOnslaught** is a modern, static, fully client-side Wake on LAN (WoL) web dashboard designed to trigger remote power-on for home computers directly from any web browser.
 
 Built with a privacy-first philosophy, CloudWaker is **100% serverless and stateless**. It requires no backend server or database—all configurations stay securely in your browser or within encrypted self-contained URLs.
 
